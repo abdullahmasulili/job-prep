@@ -1,7 +1,7 @@
 # Job preparation MVP design
 
 Date: 2026-10-26 (Asia/Jakarta)
-Status: Proposed for user approval. Product implementation has not started.
+Status: Approved by the user on 2026-10-26; implementation authorized.
 Builder review: completed; no important unanswered planning questions.
 
 ## Intent
@@ -130,11 +130,11 @@ security measure. No timer or automatic timeout is required for this MVP.
 
 ### Tier and role content
 
-| Tier | Aptitude | Technical and practical work | Interview |
-| --- | --- | --- | --- |
-| Junior | Logic, numerical reasoning, tracing, decomposition | Fundamentals, bounded tasks, error handling, basic tests, explaining code | Project walkthrough, clarifying questions, structured examples |
-| Mid | Constraint-based reasoning, estimation, diagnosing evidence | Feature ownership, integrations, testing strategy, security, performance, maintainability | Tradeoffs, delivery decisions, collaboration, incident stories |
-| Senior | Ambiguous scenarios, prioritization, risk and capacity reasoning | Architecture, reliability, migrations, observability, failure modes, design reviews | System design, leadership, mentoring, stakeholder decisions |
+| Tier   | Aptitude                                                         | Technical and practical work                                                              | Interview                                                      |
+| ------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Junior | Logic, numerical reasoning, tracing, decomposition               | Fundamentals, bounded tasks, error handling, basic tests, explaining code                 | Project walkthrough, clarifying questions, structured examples |
+| Mid    | Constraint-based reasoning, estimation, diagnosing evidence      | Feature ownership, integrations, testing strategy, security, performance, maintainability | Tradeoffs, delivery decisions, collaboration, incident stories |
+| Senior | Ambiguous scenarios, prioritization, risk and capacity reasoning | Architecture, reliability, migrations, observability, failure modes, design reviews       | System design, leadership, mentoring, stakeholder decisions    |
 
 Frontend topics: semantic markup, responsive layout, accessibility, JavaScript
 behavior, typed contracts where relevant, state/data flow, browser performance,
