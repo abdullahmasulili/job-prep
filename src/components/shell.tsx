@@ -15,7 +15,7 @@ import {
   ListItemButton,
   Paper,
 } from '@mui/material';
-import { profileLabel, languages } from '@/content/catalog';
+import { profileLabel, profileDetails } from '@/content/catalog';
 
 const navigation: { href: string; name: string; icon: IconName }[] = [
   { href: '/', name: 'Overview', icon: 'overview' },
@@ -169,7 +169,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <span>Made for your next chapter.</span>
               <span>
                 {profile
-                  ? `${profileLabel(profile)} · ${languages.find((l) => l.id === profile.language)?.label}`
+                  ? `${profileLabel(profile)} · ${profileDetails(profile)}`
                   : 'Your pace. Your path.'}
               </span>
             </footer>

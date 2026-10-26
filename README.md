@@ -1,7 +1,7 @@
 # Jobprep
 
-A Next.js app using Material UI and Redux Toolkit for developer job preparation. Choose a frontend, backend, or
-fullstack role; junior, mid-level, or senior responsibility; and a technical
+A Next.js app using Material UI and Redux Toolkit for developer job preparation. Choose a frontend, backend,
+fullstack, or mobile role; junior, mid-level, or senior responsibility; and a technical
 language. Work through guided preparation, multiple-choice assessments, written
 exercises, and interview practice. Optional AI workflow preparation has separate
 progress.
@@ -32,13 +32,19 @@ npm start
   and a self-reviewed exercise. All modules are available immediately.
 - Frontend supports JavaScript/TypeScript. Backend and fullstack also support
   Python, Java, C#, and Go. Fullstack browser scenarios use JavaScript/TypeScript.
+- Mobile paths cover Flutter (Dart), React Native (TypeScript/JavaScript), Kotlin
+  Multiplatform, native Android (Kotlin or Java), and native iOS (Swift). Each stack
+  includes tier-specific guides, assessments, practical exercises, and official references.
+- Fullstack enrollment can include mobile development. Choose a mobile stack
+  alongside your backend language to add a fifth required module covering mobile/API
+  integration, offline work, lifecycle, security, testing, and release decisions.
 - A module is complete after its preparation checklist, a quiz result of at
   least 75%, and a nonempty response with its self-review checklist completed.
 - Retakes preserve the best result and the most recent 20 attempts per module.
   A lower retake score does not remove a previous pass. Content-version changes
   invalidate incompatible quiz results for completion but retain history.
 - Reset erases only the selected path's work. Unenroll leaves its work saved;
-  re-enroll in the same role/tier/language to resume. Different profiles are isolated.
+  re-enroll in the same role/tier/language/mobile stack to resume. Different profiles are isolated.
 - AI preparation is optional, uses supplied scenarios rather than a live model,
   and never changes required completion. Disabling it retains its work.
 

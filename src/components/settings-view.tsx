@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { profileLabel, languages, REVIEWED_ON } from '@/content/catalog';
+import { profileLabel, profileDetails, REVIEWED_ON } from '@/content/catalog';
 import { resetProfile, unenroll, updateProfile } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Action, ConfirmDialog, PageHeader } from './ui';
@@ -34,7 +34,7 @@ export function SettingsView() {
             <div className="settings-row">
               <div>
                 <strong>{profileLabel(profile)}</strong>
-                <p className="muted">{languages.find((l) => l.id === profile.language)?.label}</p>
+                <p className="muted">{profileDetails(profile)}</p>
               </div>
               <Action href="/onboarding">Change path</Action>
             </div>
@@ -136,8 +136,7 @@ export function SettingsView() {
               <p>
                 Reset all preparation work for{' '}
                 <strong>
-                  {profileLabel(profile)} ·{' '}
-                  {languages.find((l) => l.id === profile.language)?.label}
+                  {profileLabel(profile)} · {profileDetails(profile)}
                 </strong>
                 ?
               </p>
@@ -164,7 +163,8 @@ export function SettingsView() {
             >
               <p>
                 Leave <strong>{profileLabel(profile)}</strong>? Your drafts and results stay saved
-                in this browser. Re-enrolling in the same role, tier, and language resumes them.
+                in this browser. Re-enrolling in the same role, tier, language, and mobile stack
+                resumes them.
               </p>
             </ConfirmDialog>
           </div>

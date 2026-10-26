@@ -447,7 +447,7 @@ h2[tabindex='-1']:focus {
 }
 .role-choices {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 .choice-card {
@@ -661,6 +661,20 @@ h2[tabindex='-1']:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+.mobile-stack-choices {
+  margin: 0 0 24px;
+}
+.mobile-stack-choices legend {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.stack-group + .stack-group {
+  margin-top: 20px;
+}
+.stack-group h3 {
+  font-size: 13px;
+  margin-bottom: 10px;
 }
 .language-choice {
   display: flex;

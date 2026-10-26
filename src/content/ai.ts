@@ -124,6 +124,8 @@ export function aiWorkflow(role: Role, tier: Tier): Blueprint {
       'The suggested endpoint accepts a userId from the request and returns that user’s private orders without checking ownership.',
     fullstack:
       'The suggested checkout retries a charge after a timeout without an idempotency key and shows success before confirmation.',
+    mobile:
+      'The suggested mobile screen retains a subscription after it is removed, logs an authentication token, and assumes a timed-out submission was never saved.',
   }[role];
   return {
     title: 'AI-assisted engineering',
@@ -133,7 +135,7 @@ export function aiWorkflow(role: Role, tier: Tier): Blueprint {
     steps: [
       {
         title: 'Frame a bounded task',
-        body: `Write the goal, relevant ${role === 'frontend' ? 'interaction and accessibility' : role === 'backend' ? 'API and data' : 'browser/server'} contracts, constraints, and acceptance criteria. Supply a minimal sanitized example, not production credentials or an entire unrelated repository.`,
+        body: `Write the goal, relevant ${role === 'frontend' ? 'interaction and accessibility' : role === 'backend' ? 'API and data' : role === 'mobile' ? 'lifecycle, platform, and API' : 'browser/server'} contracts, constraints, and acceptance criteria. Supply a minimal sanitized example, not production credentials or an entire unrelated repository.`,
       },
       {
         title:

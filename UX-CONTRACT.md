@@ -1,22 +1,29 @@
 # Jobprep interaction contract
 
 Business source: approved `docs/superpowers/specs/2026-10-26-job-preparation-design.md`.
+Mobile extension source: user request on 2026-10-26 for cross-platform and native
+mobile preparation and an option to include mobile in fullstack paths.
 Visual source: `DESIGN.md`. Locale: English; dates use browser locale/timezone.
 
 ## Canonical UI Map
 
-| Capability     | Canonical owner                                     | Source of truth         | Allowed variants               | Verification                       |
-| -------------- | --------------------------------------------------- | ----------------------- | ------------------------------ | ---------------------------------- |
-| Form           | Material UI Radio, Checkbox and TextField           | Approved spec           | radio / checkbox / response    | E2E validation and accessibility   |
-| Select/Listbox | Material UI Radio and Button with associated labels | Approved spec           | role / tier / language / theme | Keyboard and E2E                   |
-| Scrollbar      | src/app/globals.css                                 | DESIGN.md               | standards and WebKit fallback  | Computed style and viewport checks |
-| Toast          | Material UI Alert and Redux save status             | Approved spec           | storage error / conflict       | Resilience E2E                     |
-| CRUD           | Progress domain functions and ConfirmDialog         | Approved spec lifecycle | enroll / reset / unenroll      | Lifecycle E2E                      |
+| Capability     | Canonical owner                                     | Source of truth                    | Allowed variants                              | Verification                       |
+| -------------- | --------------------------------------------------- | ---------------------------------- | --------------------------------------------- | ---------------------------------- |
+| Form           | Material UI Radio, Checkbox and TextField           | Approved spec                      | radio / checkbox / response                   | E2E validation and accessibility   |
+| Select/Listbox | Material UI Radio and Button with associated labels | Approved spec and mobile extension | role / tier / language / mobile stack / theme | Keyboard and E2E                   |
+| Scrollbar      | src/app/globals.css                                 | DESIGN.md                          | standards and WebKit fallback                 | Computed style and viewport checks |
+| Toast          | Material UI Alert and Redux save status             | Approved spec                      | storage error / conflict                      | Resilience E2E                     |
+| CRUD           | Progress domain functions and ConfirmDialog         | Approved spec lifecycle            | enroll / reset / unenroll                     | Lifecycle E2E                      |
 
 ## Flow ledger
 
-Enroll saves role/tier/language/AI and navigates to overview. Re-enrolling resumes
-that profile. Prep/response/review updates enqueue a save after each action and show
+Enroll saves role/tier/language/mobile stack/AI and navigates to overview. Mobile
+requires a compatible stack/language; fullstack optionally adds a required mobile
+module while keeping its backend language. Stack choices use the same Material
+radio/label owner as language choices. Re-enrolling resumes the same configuration;
+different mobile stacks and web-only fullstack paths retain separate work. Existing
+web profile IDs remain compatible. Module totals reflect the chosen curriculum;
+AI always remains separate from required progress. Prep/response/review updates enqueue a save after each action and show
 saving status until the serialized Web Locks write completes. Quiz drafts persist,
 submission validates all answers, saves an immutable
 snapshot and displays feedback. Retake clears only the current quiz draft/result
@@ -51,4 +58,5 @@ Local answers never enter URL parameters. No charts depend on color alone.
 Redux Toolkit is the single observable source for workspace data, theme, hydration,
 saving and errors. Each provider creates its own store. Persistence, promises,
 Web Locks and DOM effects stay in the controller, outside reducers. The saved JSON
-schema/key and all enrollment/scoring/completion rules are unchanged.
+schema/key stays compatible through an optional mobileStack field and the additional
+mobile module ID. Scoring and per-module completion rules are unchanged.

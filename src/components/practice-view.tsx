@@ -66,7 +66,10 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
           <Icon name="arrow" size={15} /> Back to my path
         </Link>
         <p className="eyebrow">
-          {module.optional ? 'Optional extension' : `Module ${index + 1} of 4`} · {module.subtitle}
+          {module.optional
+            ? 'Optional extension'
+            : `Module ${index + 1} of ${modules.filter((m) => !m.optional).length}`}{' '}
+          · {module.subtitle}
         </p>
         <h1>{module.title}</h1>
         <p>{module.description}</p>

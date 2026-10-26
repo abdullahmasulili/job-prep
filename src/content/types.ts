@@ -1,7 +1,15 @@
-export type Role = 'frontend' | 'backend' | 'fullstack';
+export type Role = 'frontend' | 'backend' | 'fullstack' | 'mobile';
 export type Tier = 'junior' | 'mid' | 'senior';
-export type Language = 'javascript' | 'typescript' | 'python' | 'java' | 'csharp' | 'go';
-export type ProfileConfig = { role: Role; tier: Tier; language: Language };
+export type Language =
+  'javascript' | 'typescript' | 'python' | 'java' | 'csharp' | 'go' | 'dart' | 'kotlin' | 'swift';
+export type MobileStack =
+  'flutter' | 'react-native' | 'kmp' | 'android-kotlin' | 'android-java' | 'ios';
+export type ProfileConfig = {
+  role: Role;
+  tier: Tier;
+  language: Language;
+  mobileStack?: MobileStack;
+};
 export type Choice = { text: string; explanation: string };
 export type Question = {
   id: string;

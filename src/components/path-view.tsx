@@ -62,7 +62,9 @@ export function PathView() {
       />
       <Paper className="path-summary panel">
         <div>
-          <strong>{stats.completed} of 4 modules</strong>
+          <strong>
+            {stats.completed} of {stats.total} modules
+          </strong>
           <span className="muted small">Core preparation complete</span>
         </div>
         <ProgressBar value={stats.percent} label="Core preparation completion" />
@@ -84,7 +86,7 @@ export function PathView() {
       </div>
       {profile.aiEnabled ? (
         <Paper component="section" className="panel module-list">
-          <ModuleRow module={modules[4]} index={4} />
+          <ModuleRow module={modules.find((m) => m.id === 'ai')!} index={stats.total} />
         </Paper>
       ) : (
         <Paper component="section" className="panel optional-panel">

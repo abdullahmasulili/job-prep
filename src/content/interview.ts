@@ -278,6 +278,8 @@ export function interview(role: Role, tier: Tier): Blueprint {
     frontend: 'an accessible account-settings interface',
     backend: 'a duplicate-safe order API',
     fullstack: 'an end-to-end checkout flow',
+    mobile:
+      'a mobile app feature with offline behavior, lifecycle changes, and a platform-specific constraint',
   }[role];
   return {
     title: 'Interview & communication',

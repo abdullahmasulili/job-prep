@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { getModules, profileLabel, languages } from '@/content/catalog';
+import { getModules, profileLabel, profileDetails } from '@/content/catalog';
 import { moduleStatus, pathStats } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Action, PageHeader, ProgressBar } from './ui';
@@ -40,19 +40,21 @@ export function Dashboard() {
           <span className="path-label">Your current path</span>
           <div className="current-path-title">
             <span className="role-icon">
-              <Icon name={profile.role} size={29} />
+              <Icon name={profile.role === 'mobile' ? 'frontend' : profile.role} size={29} />
             </span>
             <div>
               <h2>{profileLabel(profile)}</h2>
               <p>
-                {languages.find((l) => l.id === profile.language)?.label} <span>·</span>{' '}
+                {profileDetails(profile)} <span>·</span>{' '}
                 {profile.aiEnabled ? 'AI extension included' : 'Core preparation'}
               </p>
             </div>
           </div>
           <div className="current-progress">
             <div>
-              <span>{stats.completed} of 4 modules</span>
+              <span>
+                {stats.completed} of {stats.total} modules
+              </span>
               <strong>{stats.percent}% complete</strong>
             </div>
             <ProgressBar value={stats.percent} label="Required path completion" />
@@ -102,7 +104,7 @@ export function Dashboard() {
             <div className="snapshot-stat">
               <strong>
                 {stats.completed}
-                <small> / 4</small>
+                <small> / {stats.total}</small>
               </strong>
               <span>Core modules complete</span>
             </div>

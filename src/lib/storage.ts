@@ -1,5 +1,5 @@
 import { emptyStore, profileId, type Store } from './progress';
-import { languagesFor, roles, tiers } from '../content/catalog';
+import { roles, tiers, validProfileConfig } from '../content/catalog';
 import type { ProfileConfig } from '../content/types';
 
 export const STORAGE_KEY = 'jobprep.progress.v1';
@@ -30,7 +30,7 @@ const attempt = (v: unknown) =>
   integer(v.score, 0, 100) &&
   typeof v.at === 'string' &&
   !Number.isNaN(Date.parse(v.at));
-const moduleIds = ['aptitude', 'fundamentals', 'practical', 'interview', 'ai'];
+const moduleIds = ['aptitude', 'fundamentals', 'practical', 'mobile', 'interview', 'ai'];
 function validStore(v: unknown): v is Store {
   if (
     !record(v) ||
@@ -49,8 +49,7 @@ function validStore(v: unknown): v is Store {
     )
       return false;
     const config = p as unknown as ProfileConfig;
-    if (profileId(config) !== id || !languagesFor(config.role).some((l) => l.id === p.language))
-      return false;
+    if (!validProfileConfig(config) || profileId(config) !== id) return false;
     if (
       typeof p.aiEnabled !== 'boolean' ||
       typeof p.enrolledAt !== 'string' ||

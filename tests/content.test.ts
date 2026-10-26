@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getModules, roles, tiers, languagesFor } from '../src/content/catalog';
 
-test('all nine tracks and supported languages have complete, referenced assessments', () => {
-  assert.equal(roles.length * tiers.length, 9);
-  for (const role of roles)
+test('all web tracks and supported languages have complete, referenced assessments', () => {
+  assert.equal(roles.length * tiers.length, 12);
+  for (const role of roles.filter((r) => r.id !== 'mobile'))
     for (const tier of tiers)
       for (const language of languagesFor(role.id)) {
         const modules = getModules({ role: role.id, tier: tier.id, language: language.id });

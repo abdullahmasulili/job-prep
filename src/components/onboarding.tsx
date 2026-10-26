@@ -1,15 +1,17 @@
 'use client';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { roles, tiers, languagesFor } from '@/content/catalog';
-import type { Role, Tier, Language } from '@/content/types';
+import { roles, tiers, languages, languagesFor, profileDetails } from '@/content/catalog';
+import { mobileStackFor } from '@/content/mobile';
+import type { Role, Tier, Language, MobileStack } from '@/content/types';
 import { enroll } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Icon } from './icons';
 import { Checkbox, Paper, Radio, Step, StepLabel, Stepper } from '@mui/material';
 import { Action } from './ui';
+import { MobileStackChoices } from './mobile-stack-choices';
 
-const stages = ['Your role', 'Experience', 'Language', 'Your plan'];
+const stages = ['Your role', 'Experience', 'Technical focus', 'Your plan'];
 export function Onboarding() {
   const { state, profile, locked, change } = useProgress();
   const router = useRouter();
@@ -17,13 +19,15 @@ export function Onboarding() {
   const [role, setRole] = useState<Role | null>(null);
   const [tier, setTier] = useState<Tier | null>(null);
   const [language, setLanguage] = useState<Language | null>(null);
+  const [mobileIncluded, setMobileIncluded] = useState(false);
+  const [mobileStack, setMobileStack] = useState<MobileStack | null>(null);
   const [ai, setAi] = useState(false);
   const [error, setError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   const choices = useRef<HTMLFieldSetElement>(null);
-  function showError(message: string) {
+  function showError(message: string, selector = 'input') {
     setError(message);
-    choices.current?.querySelector('input')?.focus();
+    choices.current?.querySelector<HTMLInputElement>(selector)?.focus();
   }
   function advance() {
     if (step === 0 && !role) {
@@ -32,6 +36,14 @@ export function Onboarding() {
     }
     if (step === 1 && !tier) {
       showError('Choose an experience level to continue.');
+      return;
+    }
+    if (
+      step === 2 &&
+      (role === 'mobile' || (role === 'fullstack' && mobileIncluded)) &&
+      !mobileStack
+    ) {
+      showError('Choose a mobile stack to continue.', 'input[name="mobile-stack"]');
       return;
     }
     if (step === 2 && !language) {
@@ -45,13 +57,15 @@ export function Onboarding() {
   const titles = [
     'What’s your next role?',
     'Where are you headed?',
-    'Choose your technical language.',
+    role === 'mobile' ? 'Choose your mobile stack.' : 'Choose your technical language.',
     'A path that fits your goals.',
   ];
   const descriptions = [
     'Choose the work you want to do. We’ll shape the preparation around it.',
     'Prepare for the responsibility you’re targeting, wherever you are today.',
-    'Practice with code and scenarios in the language you want to interview in.',
+    role === 'mobile'
+      ? 'Choose a cross-platform stack or native Android or iOS development.'
+      : 'Practice with code and scenarios in the language you want to interview in.',
     'Review your choices and decide whether to add AI workflow practice.',
   ];
   return (
@@ -116,13 +130,16 @@ export function Onboarding() {
                         onChange={() => {
                           setRole(r.id);
                           setError('');
+                          setMobileStack(null);
+                          setMobileIncluded(false);
+                          if (r.id === 'mobile') setLanguage(null);
                           if (language && !languagesFor(r.id).some((l) => l.id === language))
                             setLanguage(null);
                         }}
                       />
                       <span className="role-choice-top">
                         <span className="role-icon">
-                          <Icon name={r.id} size={26} />
+                          <Icon name={r.id === 'mobile' ? 'frontend' : r.id} size={26} />
                         </span>
                       </span>
                       <strong>{r.label}</strong>
@@ -164,32 +181,75 @@ export function Onboarding() {
               )}
               {step === 2 && role && (
                 <>
-                  <div className="language-choices">
-                    {languagesFor(role).map((l) => (
-                      <label
-                        className={`choice-card language-choice ${language === l.id ? 'selected' : ''}`}
-                        key={l.id}
-                      >
-                        <Radio
-                          className="choice-radio"
-                          disabled={locked}
-                          name="language"
-                          checked={language === l.id}
-                          onChange={() => {
-                            setLanguage(l.id);
-                            setError('');
-                          }}
-                        />
-                        <span className="language-mark" aria-hidden="true">
-                          {l.short}
-                        </span>
+                  {role === 'fullstack' && (
+                    <label className={`ai-option ${mobileIncluded ? 'selected' : ''}`}>
+                      <Checkbox
+                        disabled={locked}
+                        checked={mobileIncluded}
+                        onChange={(e) => {
+                          setMobileIncluded(e.target.checked);
+                          setError('');
+                          if (!e.target.checked) setMobileStack(null);
+                        }}
+                      />
+                      <span>
+                        <strong>Include mobile development</strong>
                         <span>
-                          <strong>{l.label}</strong>
-                          <span className="choice-description">{l.description}</span>
+                          Add a required mobile module alongside your web and backend preparation.
                         </span>
-                      </label>
-                    ))}
-                  </div>
+                      </span>
+                    </label>
+                  )}
+                  {(role === 'mobile' || (role === 'fullstack' && mobileIncluded)) && (
+                    <MobileStackChoices
+                      value={mobileStack}
+                      disabled={locked}
+                      onChange={(stack) => {
+                        setMobileStack(stack);
+                        setError('');
+                        if (role === 'mobile') setLanguage(mobileStackFor(stack).languages[0]);
+                      }}
+                    />
+                  )}
+                  {role === 'mobile' && mobileStack && (
+                    <p className="field-note">
+                      Choose your interview language. Your stack’s default is selected below.
+                    </p>
+                  )}
+                  {(role !== 'mobile' || mobileStack) && (
+                    <>
+                      <div className="language-choices">
+                        {languagesFor(role, mobileStack ?? undefined).map((l) => (
+                          <label
+                            className={`choice-card language-choice ${language === l.id ? 'selected' : ''}`}
+                            key={l.id}
+                          >
+                            <Radio
+                              className="choice-radio"
+                              disabled={locked}
+                              name="language"
+                              checked={language === l.id}
+                              onChange={() => {
+                                setLanguage(l.id);
+                                setError('');
+                              }}
+                            />
+                            <span className="language-mark" aria-hidden="true">
+                              {l.short}
+                            </span>
+                            <span>
+                              <strong>{l.label}</strong>
+                              <span className="choice-description">
+                                {role === 'mobile' && l.id === 'java'
+                                  ? 'Native Android applications'
+                                  : l.description}
+                              </span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
                   {role === 'fullstack' && (
                     <p className="field-note">
                       This is your primary backend language. Browser scenarios use
@@ -213,6 +273,22 @@ export function Onboarding() {
                       <span className="muted small">Technical language</span>
                       <strong>{languagesFor(role!).find((l) => l.id === language)?.label}</strong>
                     </div>
+                    {mobileStack && (
+                      <div>
+                        <span className="muted small">Mobile stack</span>
+                        <strong>{mobileStackFor(mobileStack).label}</strong>
+                        {role === 'fullstack' && (
+                          <span className="muted small">
+                            5 core modules · Mobile code in{' '}
+                            {
+                              languages.find(
+                                (l) => l.id === mobileStackFor(mobileStack).languages[0],
+                              )!.label
+                            }
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <label className={`ai-option ${ai ? 'selected' : ''}`}>
                     <Checkbox
@@ -274,7 +350,13 @@ export function Onboarding() {
                     role &&
                     tier &&
                     language &&
-                    change((s) => enroll(s, { role, tier, language }, ai))
+                    change((s) =>
+                      enroll(
+                        s,
+                        { role, tier, language, ...(mobileStack ? { mobileStack } : {}) },
+                        ai,
+                      ),
+                    )
                   )
                     router.push('/');
                 }}
@@ -295,6 +377,9 @@ export function Onboarding() {
               ['Aptitude & reasoning', 'Think through problems clearly.'],
               ['Role & language fundamentals', 'Know the concepts behind the code.'],
               ['Practical engineering', 'Work through real-world scenarios.'],
+              ...(role === 'fullstack' && mobileIncluded
+                ? [['Mobile development', 'Connect a mobile client to your backend.']]
+                : []),
               ['Interview preparation', 'Tell the story of your work.'],
             ].map(([title, body], i) => (
               <li key={title}>
@@ -329,8 +414,7 @@ export function Onboarding() {
                 }}
               >
                 {tiers.find((t) => t.id === p.tier)?.label}{' '}
-                {roles.find((r) => r.id === p.role)?.label} ·{' '}
-                {languagesFor(p.role).find((l) => l.id === p.language)?.label}
+                {roles.find((r) => r.id === p.role)?.label} · {profileDetails(p)}
               </Action>
             ))}
           </div>

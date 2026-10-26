@@ -5,6 +5,7 @@ import { frontendTracks } from './frontend';
 import { backendTracks } from './backend';
 import { fullstackTracks } from './fullstack';
 import { languages, languageQuestion } from './languages';
+import { fullstackMobile, mobileStackFor, mobileStacks, mobileTrack } from './mobile';
 import {
   sources,
   type ProfileConfig,
@@ -12,6 +13,7 @@ import {
   type Tier,
   type PrepModule,
   type Blueprint,
+  type MobileStack,
 } from './types';
 export { languages };
 export const REVIEWED_ON = '2026-10-26';
@@ -43,6 +45,13 @@ export const roles: {
     description: 'Connect the whole product, end to end.',
     skills: 'Browser · Server · Integration',
   },
+  {
+    id: 'mobile',
+    label: 'Mobile',
+    title: 'Mobile developer',
+    description: 'Build apps for Android and iOS.',
+    skills: 'Cross-platform · Android · iOS',
+  },
 ];
 export const tiers: { id: Tier; label: string; description: string }[] = [
   {
@@ -61,23 +70,58 @@ export const tiers: { id: Tier; label: string; description: string }[] = [
     description: 'Navigate ambiguity, design systems, and guide technical decisions.',
   },
 ];
-export function languagesFor(role: Role) {
+export function languagesFor(role: Role, mobileStack?: MobileStack) {
+  if (role === 'mobile') {
+    const allowed = mobileStack
+      ? mobileStackFor(mobileStack).languages
+      : mobileStacks.flatMap((s) => s.languages);
+    return languages.filter((l) => allowed.includes(l.id));
+  }
   return languages.filter(
-    (l) => role !== 'frontend' || l.id === 'javascript' || l.id === 'typescript',
+    (l) =>
+      !['dart', 'kotlin', 'swift'].includes(l.id) &&
+      (role !== 'frontend' || l.id === 'javascript' || l.id === 'typescript'),
   );
+}
+export function validProfileConfig(config: ProfileConfig): boolean {
+  if (!roles.some((r) => r.id === config.role) || !tiers.some((t) => t.id === config.tier))
+    return false;
+  if (
+    config.mobileStack !== undefined &&
+    (!['mobile', 'fullstack'].includes(config.role) ||
+      !mobileStacks.some((s) => s.id === config.mobileStack))
+  )
+    return false;
+  if (config.role === 'mobile' && !config.mobileStack) return false;
+  return languagesFor(config.role, config.mobileStack).some((l) => l.id === config.language);
+}
+export function profileDetails(config: ProfileConfig) {
+  const language = languages.find((l) => l.id === config.language)!.label;
+  if (!config.mobileStack) return language;
+  const stack = mobileStackFor(config.mobileStack);
+  return config.role === 'mobile'
+    ? `${stack.label} · ${language}`
+    : `${language} backend · Mobile: ${stack.label}`;
 }
 export function profileLabel(config: ProfileConfig) {
   return `${tiers.find((t) => t.id === config.tier)!.label} ${roles.find((r) => r.id === config.role)!.title}`;
 }
 export function getModules(config: ProfileConfig): PrepModule[] {
-  const track = { frontend: frontendTracks, backend: backendTracks, fullstack: fullstackTracks }[
-    config.role
-  ][config.tier];
+  if (!validProfileConfig(config))
+    throw new Error('Choose a valid role, language, and mobile stack.');
+  const track =
+    config.role === 'mobile'
+      ? mobileTrack(config.mobileStack!, config.tier)
+      : { frontend: frontendTracks, backend: backendTracks, fullstack: fullstackTracks }[
+          config.role
+        ][config.tier];
   const language = languages.find((l) => l.id === config.language)!;
   const technicalSources =
-    config.role === 'frontend'
-      ? [sources.mdn, sources.a11y, language.source]
-      : [sources.http, sources.sql, sources.security, language.source];
+    config.role === 'mobile'
+      ? [mobileStackFor(config.mobileStack!).source, language.source]
+      : config.role === 'frontend'
+        ? [sources.mdn, sources.a11y, language.source]
+        : [sources.http, sources.sql, sources.security, language.source];
   const exercise = {
     title: 'Explain and apply the fundamentals',
     prompt: `Using ${language.label}, explain the key data structures, error handling, and boundary checks for this task: ${track.task} ${config.role === 'fullstack' ? 'Use JavaScript/TypeScript for browser-specific behavior.' : ''}`,
@@ -124,6 +168,17 @@ export function getModules(config: ProfileConfig): PrepModule[] {
     },
     { ...fundamentals, id: 'fundamentals', subtitle: 'Know your craft', minutes: 40, version: 1 },
     { ...practical, id: 'practical', subtitle: 'Put it into practice', minutes: 50, version: 1 },
+    ...(config.role === 'fullstack' && config.mobileStack
+      ? [
+          {
+            ...fullstackMobile(config.mobileStack, config.tier),
+            id: 'mobile',
+            subtitle: 'Extend to mobile',
+            minutes: 50,
+            version: 1,
+          },
+        ]
+      : []),
     {
       ...interview(config.role, config.tier),
       id: 'interview',

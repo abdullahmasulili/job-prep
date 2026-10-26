@@ -29,7 +29,9 @@ export function ProgressView() {
             <strong>{stats.percent}%</strong>
           </div>
           <ProgressBar value={stats.percent} label="Core modules complete" />
-          <p className="muted">{stats.completed} of 4 required modules complete</p>
+          <p className="muted">
+            {stats.completed} of {stats.total} required modules complete
+          </p>
         </Paper>
         <Paper component="section" className="panel ai-progress">
           <Icon name="fullstack" size={22} />

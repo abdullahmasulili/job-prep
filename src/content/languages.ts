@@ -8,6 +8,30 @@ export const languages: {
   source: Source;
 }[] = [
   {
+    id: 'dart',
+    label: 'Dart',
+    short: 'Da',
+    description: 'Flutter mobile applications',
+    source: { label: 'Dart language', url: 'https://dart.dev/language' },
+  },
+  {
+    id: 'kotlin',
+    label: 'Kotlin',
+    short: 'Kt',
+    description: 'Android and Kotlin Multiplatform',
+    source: { label: 'Kotlin language', url: 'https://kotlinlang.org/docs/home.html' },
+  },
+  {
+    id: 'swift',
+    label: 'Swift',
+    short: 'Sw',
+    description: 'Native iOS applications',
+    source: {
+      label: 'The Swift programming language',
+      url: 'https://docs.swift.org/swift-book/documentation/the-swift-programming-language/',
+    },
+  },
+  {
     id: 'typescript',
     label: 'TypeScript',
     short: 'TS',
@@ -62,8 +86,92 @@ export const languages: {
 
 export function languageQuestion(language: Language, tier: Tier): Question {
   const id = `language-${language}-${tier}`;
+  if (language === 'dart' || language === 'kotlin' || language === 'swift') {
+    const code = {
+      dart: {
+        junior: 'String? name;\nprint(name?.length ?? 0);',
+        mid: 'class Profile { String name = "Ada"; }\nvoid main() {\n  final original = Profile();\n  final copy = original;\n  copy.name = "Grace";\n  print(original.name);\n}',
+        senior:
+          'final requestedId = selectedId;\nfinal result = await loadJob(requestedId);\nstate = result; // selectedId may have changed during await',
+      },
+      kotlin: {
+        junior: 'val name: String? = null\nprintln(name?.length ?: 0)',
+        mid: 'class Profile(var name: String)\nval original = Profile("Ada")\nval copy = original\ncopy.name = "Grace"\nprintln(original.name)',
+        senior:
+          'val requestedId = selectedId\nval result = loadJob(requestedId) // suspending call\nstate.value = result // selectedId may have changed',
+      },
+      swift: {
+        junior: 'let name: String? = nil\nprint(name?.count ?? 0)',
+        mid: 'final class Profile { var name = "Ada" }\nlet original = Profile()\nlet copy = original\ncopy.name = "Grace"\nprint(original.name)',
+        senior:
+          'let requestedID = selectedID\nlet result = try await loadJob(requestedID)\nstate = result // selectedID may have changed during await',
+      },
+    }[language][tier];
+    if (tier === 'junior')
+      return q(
+        id,
+        'What does this nullable-value expression print?',
+        [
+          '0',
+          'The optional value is absent, so the null-coalescing or Elvis operator supplies zero.',
+        ],
+        [
+          ['null', 'The fallback replaces the absent length with zero before printing.'],
+          [
+            'An exception',
+            'Optional access avoids dereferencing an absent value in this expression.',
+          ],
+          ['1', 'There is no name whose character count could produce one.'],
+        ],
+        code,
+      );
+    if (tier === 'mid')
+      return q(
+        id,
+        'What is printed after assigning this class instance to a second variable?',
+        [
+          'Grace; both variables refer to the same instance',
+          'Assignment aliases this mutable class instance. In Swift this example deliberately uses a class, rather than a value-type struct.',
+        ],
+        [
+          [
+            'Ada; assignment deep-copies the instance',
+            'Assignment does not create an independent copy of this class instance.',
+          ],
+          [
+            'A compile error because the binding is immutable',
+            'The binding stays attached to the same instance; its declared mutable property can still change.',
+          ],
+          ['null', 'The initialized name is replaced by Grace, not removed.'],
+        ],
+        code,
+      );
+    return q(
+      id,
+      'The selected job can change while this request is suspended. What prevents a stale result from replacing the current screen?',
+      [
+        'Cancel superseded work and verify the request still owns the current state before committing',
+        'Suspension allows other work to change selection. Cancellation plus an identity or generation check prevents obsolete state commits.',
+      ],
+      [
+        [
+          'Assume await makes the entire function atomic',
+          'An asynchronous suspension does not make surrounding reads and writes indivisible.',
+        ],
+        [
+          'Block the UI thread until the request returns',
+          'Blocking harms responsiveness and avoids modeling ownership correctly.',
+        ],
+        [
+          'Ignore every request error',
+          'Suppressing failures does not prevent out-of-order results from replacing current state.',
+        ],
+      ],
+      code,
+    );
+  }
   if (tier === 'junior') {
-    const snippets: Record<Language, string> = {
+    const snippets = {
       javascript:
         'const values = [2, 4, 6];\nconst result = values.filter(n => n > 2).length;\nconsole.log(result);',
       typescript:
@@ -90,7 +198,7 @@ export function languageQuestion(language: Language, tier: Tier): Question {
     );
   }
   if (tier === 'mid') {
-    const snippets: Record<Language, string> = {
+    const snippets = {
       javascript:
         'const original = { profile: { name: "Ada" } };\nconst copy = { ...original };\ncopy.profile.name = "Grace";\nconsole.log(original.profile.name);',
       typescript:
@@ -123,7 +231,7 @@ export function languageQuestion(language: Language, tier: Tier): Question {
       snippets[language],
     );
   }
-  const snippets: Record<Language, string> = {
+  const snippets = {
     javascript:
       'async function spend(accountId, amount) {\n  const balance = await db.readBalance(accountId);\n  if (balance >= amount) {\n    await db.writeBalance(accountId, balance - amount);\n    return true;\n  }\n  return false;\n}',
     typescript:

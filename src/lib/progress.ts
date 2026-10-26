@@ -1,4 +1,5 @@
 import type { PrepModule, ProfileConfig } from '../content/types';
+import { validProfileConfig } from '../content/catalog';
 
 export type Attempt = {
   id: string;
@@ -34,9 +35,10 @@ export function emptyStore(): Store {
   return { schemaVersion: 1, revision: 0, activeId: null, profiles: {}, theme: 'light' };
 }
 export function profileId(config: ProfileConfig) {
-  return `${config.role}:${config.tier}:${config.language}`;
+  return `${config.role}:${config.tier}:${config.language}${config.mobileStack ? `:${config.mobileStack}` : ''}`;
 }
 export function enroll(state: Store, config: ProfileConfig, aiEnabled: boolean): Store {
+  if (!validProfileConfig(config)) throw new Error('Choose a valid preparation path.');
   const id = profileId(config);
   const existing = state.profiles[id];
   const profile: Profile = existing
