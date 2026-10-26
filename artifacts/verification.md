@@ -98,3 +98,12 @@ and `assessment-mobile-dark.png`, captured from the production app.
   repository is configured. Clearing browser data removes local progress.
 
 No deferred Minor review findings.
+
+## Progress animation follow-up
+
+Fixed the layout-transition hook finding by animating `scaleX()` on a full-width
+fill. In a controlled Chrome animation sample, layout passes fell from 16 to 0.
+Rendered fills matched 0/25/50/75/100% at desktop and phone widths; reduced-motion
+transition duration remained 0s. Typecheck, lint, formatting and production build
+passed. No ignore was added; unrelated existing radius/color advisories were left
+unchanged rather than broadening this fix.

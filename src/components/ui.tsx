@@ -13,7 +13,7 @@ export function ProgressBar({ value, label }: { value: number; label: string }) 
       aria-valuemax={100}
       aria-valuenow={value}
     >
-      <span style={{ width: `${value}%` }} />
+      <span style={{ transform: `scaleX(${value / 100})` }} />
     </div>
   );
 }
