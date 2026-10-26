@@ -1,6 +1,8 @@
 # Jobprep verification
 
-Verified October 26, 2026. No external ticket.
+Original MVP verified October 26, 2026. No external ticket. The subsequent
+[Material UI migration verification](material-ui-migration.md) records the current
+interface, Redux state ownership and latest test results.
 
 ## Result
 

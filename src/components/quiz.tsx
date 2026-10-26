@@ -4,6 +4,8 @@ import type { PrepModule } from '@/content/types';
 import { recordAttempt, scoreQuiz, type ModuleProgress } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Icon } from './icons';
+import { Alert, Radio } from '@mui/material';
+import { Action } from './ui';
 
 export function Quiz({ module, progress }: { module: PrepModule; progress: ModuleProgress }) {
   const { changeModule, locked } = useProgress();
@@ -46,9 +48,8 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
             Best result:{' '}
             {progress.best?.version === module.version ? progress.best.score : latest.score}%
           </span>
-          <button
+          <Action
             type="button"
-            className="button secondary"
             disabled={locked}
             onClick={() => {
               setError('');
@@ -56,7 +57,7 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
             }}
           >
             Try again
-          </button>
+          </Action>
         </section>
       ) : (
         <div className="quiz-intro">
@@ -101,8 +102,8 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
                     key={choiceIndex}
                     className={`quiz-choice ${selected ? 'selected' : ''} ${submitted && correct ? 'correct' : ''} ${submitted && selected && !correct ? 'incorrect' : ''}`}
                   >
-                    <input
-                      type="radio"
+                    <Radio
+                      disabled={!!submitted || locked}
                       name={question.id}
                       value={choiceIndex}
                       checked={selected}
@@ -137,18 +138,18 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
           </fieldset>
         ))}
         {error && (
-          <p className="form-error" id="quiz-error" role="alert">
+          <Alert severity="error" id="quiz-error" sx={{ mt: 2 }}>
             {error}
-          </p>
+          </Alert>
         )}
         {!submitted && (
           <div className="quiz-actions">
             <span className="small muted">
               Answers save as you go. Explanations appear after checking.
             </span>
-            <button type="submit" className="button primary" disabled={locked}>
+            <Action type="submit" variant="contained" disabled={locked}>
               Check answers <Icon name="check" size={17} />
-            </button>
+            </Action>
           </div>
         )}
       </form>

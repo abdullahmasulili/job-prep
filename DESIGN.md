@@ -53,8 +53,10 @@ reading sessions comfortable. Success and danger are functional feedback colors,
 always accompanied by text. Dark theme remaps semantic roles rather than changing
 component layout: canvas #141820, surface #1c222d, ink #edf0f7, muted #a9b3c4,
 primary #9bb2ff, primarySoft #263457, border #343f50. Primary buttons use dark ink
-in dark mode. Runtime canonical tokens live in `src/app/globals.css`; this file
-mirrors their values. Shared components consume variables, with no theme package.
+in dark mode. This file mirrors the accepted values. `src/theme/theme.ts` is the
+canonical palette owner: it builds
+the Material UI theme and emits the same semantic CSS variables through
+`AppTheme`. Shared components consume that theme rather than separate palettes.
 
 ## Typography
 
@@ -86,17 +88,20 @@ actual metadata/status. The path's circular index denotes position in a sequence
 
 ## Components
 
-Canonical owners: `ui.tsx` owns progress bars, headers, empty states and confirmation
-dialogs; `icons.tsx` owns SVG symbols. Window for frontend, server for backend,
+Canonical owners: Material UI owns buttons, radio/checkbox controls, text fields,
+tabs, stepper, papers, chips, navigation, progress and dialogs. `ui.tsx` supplies
+thin shared Material adapters for app actions and confirmations. `icons.tsx` owns
+SVG symbols. Window for frontend, server for backend,
 layers for fullstack, checklist for path, chart for measured progress, and sliders
 for settings. Each symbol reinforces the adjacent label. Arrow marks navigation
 only on the main continue link and path rows. Hover/focus transitions clarify
 interaction, with reduced motion respected. Both themes share the same CSS rules.
 
-Token mapping: colors.* map to --canvas/--surface/--ink/--muted/--primary/
---primary-soft/--border/--success/--danger in globals.css; heading/body/code map
-to font stacks; radii map to --radius-control and --radius-panel. No copied theme
-values in React views. Theme setting is owned by the progress provider.
+Token mapping: `src/theme/theme.ts` maps colors.* to Material palette roles and
+--canvas/--surface/--ink/--muted/--primary/--primary-soft/--border/--success/--danger
+through GlobalStyles. Layout CSS consumes those semantic variables. Typography
+and component styles are configured in the Material theme. Redux Toolkit owns the
+theme preference and workspace data; the progress controller owns persistence.
 
 ## Do's and Don'ts
 

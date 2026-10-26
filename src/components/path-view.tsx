@@ -4,7 +4,8 @@ import { getModules, profileLabel } from '@/content/catalog';
 import { moduleStatus, pathStats } from '@/lib/progress';
 import type { PrepModule } from '@/content/types';
 import { useProgress } from './progress-provider';
-import { EmptyPath, PageHeader, ProgressBar, StatusTag } from './ui';
+import { Action, EmptyPath, PageHeader, ProgressBar, StatusTag } from './ui';
+import { ListItemButton, Paper } from '@mui/material';
 import { Icon } from './icons';
 
 export function ModuleRow({
@@ -20,7 +21,11 @@ export function ModuleRow({
   if (!profile) return null;
   const status = moduleStatus(module, profile.modules[module.id]);
   return (
-    <Link href={`/practice/${module.id}`} className={`module-row ${compact ? 'compact' : ''}`}>
+    <ListItemButton
+      component={Link}
+      href={`/practice/${module.id}`}
+      className={`module-row ${compact ? 'compact' : ''}`}
+    >
       <span className={`module-number ${status.complete ? 'done' : ''}`}>
         {status.complete ? <Icon name="check" size={21} /> : String(index + 1).padStart(2, '0')}
       </span>
@@ -40,7 +45,7 @@ export function ModuleRow({
         </div>
       </div>
       <Icon name="arrow" size={20} />
-    </Link>
+    </ListItemButton>
   );
 }
 export function PathView() {
@@ -55,21 +60,21 @@ export function PathView() {
         title="One step closer, every session."
         description={`${profileLabel(profile)}. Follow the suggested order, or focus on the skills you need most.`}
       />
-      <div className="path-summary panel">
+      <Paper className="path-summary panel">
         <div>
           <strong>{stats.completed} of 4 modules</strong>
           <span className="muted small">Core preparation complete</span>
         </div>
         <ProgressBar value={stats.percent} label="Core preparation completion" />
         <strong className="percentage">{stats.percent}%</strong>
-      </div>
-      <section className="panel module-list" aria-label="Required modules">
+      </Paper>
+      <Paper component="section" className="panel module-list" aria-label="Required modules">
         {modules
           .filter((m) => !m.optional)
           .map((module, index) => (
             <ModuleRow key={module.id} module={module} index={index} />
           ))}
-      </section>
+      </Paper>
       <div className="section-heading">
         <div>
           <p className="eyebrow">Go a little further</p>
@@ -78,11 +83,11 @@ export function PathView() {
         <span className="small muted">Separate from core progress</span>
       </div>
       {profile.aiEnabled ? (
-        <section className="panel module-list">
+        <Paper component="section" className="panel module-list">
           <ModuleRow module={modules[4]} index={4} />
-        </section>
+        </Paper>
       ) : (
-        <section className="panel optional-panel">
+        <Paper component="section" className="panel optional-panel">
           <div className="optional-symbol">
             <Icon name="fullstack" size={26} />
           </div>
@@ -93,10 +98,8 @@ export function PathView() {
               you’re ready.
             </p>
           </div>
-          <Link href="/settings" className="button secondary">
-            Enable in Settings
-          </Link>
-        </section>
+          <Action href="/settings">Enable in Settings</Action>
+        </Paper>
       )}
       <p className="field-note">
         Each module combines a preparation checklist, a multiple-choice assessment, and a

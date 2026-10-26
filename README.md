@@ -1,6 +1,6 @@
 # Jobprep
 
-A Next.js app for developer job preparation. Choose a frontend, backend, or
+A Next.js app using Material UI and Redux Toolkit for developer job preparation. Choose a frontend, backend, or
 fullstack role; junior, mid-level, or senior responsibility; and a technical
 language. Work through guided preparation, multiple-choice assessments, written
 exercises, and interview practice. Optional AI workflow preparation has separate
@@ -82,9 +82,12 @@ responsive layouts and automated accessibility checks.
 - `src/content/`: original question banks, guides, language variants and references.
 - `src/lib/progress.ts`: scoring, completion and enrollment transitions.
 - `src/lib/storage.ts`: schema validation and revision-aware local persistence.
-- `src/components/progress-provider.tsx`: browser hydration and shared state.
+- `src/lib/workspace-store.ts`: per-provider Redux Toolkit store for progress and save status.
+- `src/components/progress-provider.tsx`: Redux-backed commands, hydration and coordinated browser persistence.
+- `src/theme/theme.ts`: Material UI palette, typography and shared component styles.
+- `src/components/app-theme.tsx`: Material theme and semantic CSS-variable adapter.
 - `src/components/`: focused screens and shared interaction primitives.
-- `src/app/`: thin App Router routes, local fonts and semantic theme tokens.
+- `src/app/`: thin App Router routes, local fonts and responsive domain layout CSS.
 - `tests/`: domain/content/storage checks and Playwright workflows.
 
 To change a quiz incompatibly, increment its module version in

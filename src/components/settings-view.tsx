@@ -1,11 +1,11 @@
 'use client';
-import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { profileLabel, languages, REVIEWED_ON } from '@/content/catalog';
 import { resetProfile, unenroll, updateProfile } from '@/lib/progress';
 import { useProgress } from './progress-provider';
-import { ConfirmDialog, PageHeader } from './ui';
+import { Action, ConfirmDialog, PageHeader } from './ui';
+import { Alert, Checkbox, Paper, Radio } from '@mui/material';
 import { Icon } from './icons';
 
 export function SettingsView() {
@@ -20,11 +20,11 @@ export function SettingsView() {
         description="Manage your path, optional practice, and local progress."
       />
       {notice && (
-        <p className="success-banner" role="status">
+        <Alert severity="success" role="status" sx={{ mb: 3 }}>
           {notice}
-        </p>
+        </Alert>
       )}
-      <section className="panel settings-section">
+      <Paper component="section" className="panel settings-section">
         <div className="settings-section-heading">
           <Icon name="path" />
           <h2>Current path</h2>
@@ -36,13 +36,10 @@ export function SettingsView() {
                 <strong>{profileLabel(profile)}</strong>
                 <p className="muted">{languages.find((l) => l.id === profile.language)?.label}</p>
               </div>
-              <Link href="/onboarding" className="button secondary">
-                Change path
-              </Link>
+              <Action href="/onboarding">Change path</Action>
             </div>
             <label className="settings-check">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={profile.aiEnabled}
                 disabled={locked}
                 onChange={(e) => {
@@ -68,13 +65,13 @@ export function SettingsView() {
         ) : (
           <div className="settings-row">
             <p className="muted">You are not enrolled in a path.</p>
-            <Link href="/onboarding" className="button primary">
+            <Action href="/onboarding" variant="contained">
               Choose my path
-            </Link>
+            </Action>
           </div>
         )}
-      </section>
-      <section className="panel settings-section">
+      </Paper>
+      <Paper component="section" className="panel settings-section">
         <div className="settings-section-heading">
           <Icon name="sun" />
           <h2>Appearance</h2>
@@ -86,8 +83,8 @@ export function SettingsView() {
               key={theme}
               className={`theme-choice ${state.theme === theme ? 'selected' : ''}`}
             >
-              <input
-                type="radio"
+              <Radio
+                disabled={locked}
                 name="theme"
                 value={theme}
                 checked={state.theme === theme}
@@ -98,8 +95,8 @@ export function SettingsView() {
             </label>
           ))}
         </fieldset>
-      </section>
-      <section className="panel settings-section">
+      </Paper>
+      <Paper component="section" className="panel settings-section">
         <div className="settings-section-heading">
           <Icon name="shield" />
           <h2>Your data stays here</h2>
@@ -114,9 +111,9 @@ export function SettingsView() {
           reviewed when it is updated. Preparation follows published competency and engineering
           guidance; employers may assess candidates differently.
         </p>
-      </section>
+      </Paper>
       {profile && (
-        <section className="panel settings-section danger-section">
+        <Paper component="section" className="panel settings-section danger-section">
           <h2>Manage enrollment</h2>
           <div className="settings-row">
             <div>
@@ -171,7 +168,7 @@ export function SettingsView() {
               </p>
             </ConfirmDialog>
           </div>
-        </section>
+        </Paper>
       )}
     </>
   );

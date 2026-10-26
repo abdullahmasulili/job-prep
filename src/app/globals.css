@@ -1,34 +1,6 @@
 :root {
-  --canvas: #f6f7f9;
-  --surface: #fff;
-  --ink: #202733;
-  --muted: #5e6878;
-  --primary: #315be8;
-  --primary-soft: #edf1ff;
-  --border: #e2e6ed;
-  --success: #16704d;
-  --danger: #b42c3b;
-  --subtle: #f0f2f6;
-  --on-primary: #fff;
-  --code-bg: #f1f3f8;
   --radius-control: 8px;
   --radius-panel: 16px;
-  color-scheme: light;
-}
-:root[data-theme='dark'] {
-  --canvas: #141820;
-  --surface: #1c222d;
-  --ink: #edf0f7;
-  --muted: #a9b3c4;
-  --primary: #9bb2ff;
-  --primary-soft: #263457;
-  --border: #343f50;
-  --success: #81d6b0;
-  --danger: #ff9ca8;
-  --subtle: #252d3b;
-  --on-primary: #131c37;
-  --code-bg: #151b25;
-  color-scheme: dark;
 }
 * {
   box-sizing: border-box;
@@ -48,12 +20,6 @@ body {
   line-height: 1.65;
 }
 button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-button,
 a,
 input,
 textarea {
@@ -66,14 +32,10 @@ a {
 button {
   cursor: pointer;
 }
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
 fieldset:disabled {
   cursor: default;
 }
-a {
+:where(a:not(.MuiButtonBase-root)) {
   color: inherit;
   text-decoration: none;
 }
@@ -111,19 +73,8 @@ svg {
   flex-shrink: 0;
   vertical-align: middle;
 }
-input[type='checkbox'],
-input[type='radio'] {
-  accent-color: var(--primary);
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
 input:disabled {
   cursor: not-allowed;
-}
-button {
-  border: 0;
 }
 button:focus-visible,
 a:focus-visible,
@@ -147,8 +98,7 @@ h2[tabindex='-1']:focus {
 .small {
   font-size: 13px;
 }
-.sr-only,
-.choice-input {
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -167,59 +117,7 @@ h2[tabindex='-1']:focus {
   color: var(--muted);
   margin-bottom: 10px;
 }
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-}
-.button {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px 19px;
-  border-radius: var(--radius-control);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: normal;
-  text-align: center;
-  line-height: 1.4;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-  flex-shrink: 0;
-  border: 1px solid transparent;
-}
-.primary {
-  background: var(--primary);
-  color: var(--on-primary);
-}
-.primary:hover {
-  filter: brightness(0.94);
-}
-.secondary {
-  background: var(--surface);
-  color: var(--ink);
-  border-color: var(--border);
-}
-.secondary:hover {
-  background: var(--subtle);
-}
-.danger {
-  background: var(--danger);
-  color: var(--surface);
-}
-.danger-outline {
-  color: var(--danger);
-  background: transparent;
-  border-color: var(--border);
-}
-.danger-outline:hover {
-  background: var(--subtle);
-}
-.text-link,
-.text-button {
+.text-link {
   font-size: 13px;
   color: var(--primary);
   font-weight: 600;
@@ -229,8 +127,7 @@ h2[tabindex='-1']:focus {
   background: none;
   padding: 5px 0;
 }
-.text-link:hover,
-.text-button:hover {
+.text-link:hover {
   text-decoration: underline;
 }
 .icon-button {
@@ -267,6 +164,8 @@ h2[tabindex='-1']:focus {
   min-height: 100dvh;
 }
 .sidebar {
+  border-radius: 0;
+  border: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
   padding: 32px 20px 14px;
@@ -461,18 +360,6 @@ h2[tabindex='-1']:focus {
   gap: 10px;
   color: var(--muted);
 }
-.loading-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--primary);
-  animation: pulse 1.2s infinite;
-}
-@keyframes pulse {
-  50% {
-    opacity: 0.3;
-  }
-}
 .storage-banner {
   display: flex;
   align-items: center;
@@ -525,46 +412,15 @@ h2[tabindex='-1']:focus {
   min-width: 0;
   overflow: clip;
 }
-.onboarding-stages {
-  display: flex;
+.enrollment-stepper {
   padding: 22px 25px;
   border-bottom: 1px solid var(--border);
-  gap: 0;
-  align-items: center;
-  justify-content: space-between;
 }
-.onboarding-stage {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 500;
-  position: relative;
+.enrollment-stepper .MuiStepLabel-label {
+  font-size: 11px;
 }
-.onboarding-stage > span:first-child {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  display: grid;
-  place-items: center;
-  background: var(--surface);
-  font-size: 10px;
-}
-.onboarding-stage.current {
-  color: var(--primary);
-  font-weight: 700;
-}
-.onboarding-stage.current > span:first-child {
-  background: var(--primary);
-  color: var(--on-primary);
-  border-color: var(--primary);
-}
-.onboarding-stage.done > span:first-child {
-  background: var(--primary-soft);
-  border-color: var(--primary-soft);
-  color: var(--primary);
+.enrollment-stepper .MuiStepLabel-label.MuiStepLabel-alternativeLabel {
+  margin-top: 8px;
 }
 .enrollment-body {
   padding: 28px 26px 30px;
@@ -640,17 +496,10 @@ h2[tabindex='-1']:focus {
   color: var(--primary);
   background: var(--surface);
 }
-.radio-indicator {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  border-radius: 50%;
-  display: block;
-  flex-shrink: 0;
-}
-.selected .radio-indicator {
-  border: 5px solid var(--primary);
+.choice-card > .choice-radio {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 .choice-card strong {
   display: block;
@@ -772,12 +621,12 @@ h2[tabindex='-1']:focus {
   gap: 12px;
 }
 .tier-choice {
-  padding: 17px 20px;
+  padding: 17px 52px 17px 20px;
   display: flex;
   align-items: center;
   gap: 18px;
 }
-.tier-choice > span:nth-of-type(2) {
+.tier-choice > span:not(.choice-radio):not(.level-bars) {
   flex: 1;
 }
 .tier-choice .choice-description {
@@ -817,9 +666,9 @@ h2[tabindex='-1']:focus {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 14px;
+  padding: 14px 52px 14px 14px;
 }
-.language-choice > span:nth-of-type(2) {
+.language-choice > span:not(.choice-radio):not(.language-mark) {
   flex: 1;
 }
 .language-mark {
@@ -930,19 +779,7 @@ h2[tabindex='-1']:focus {
   max-width: 650px;
 }
 .progress-track {
-  height: 6px;
-  border-radius: 10px;
-  background: var(--border);
-  overflow: clip;
-}
-.progress-track > span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: var(--primary);
-  border-radius: 10px;
-  transform-origin: left center;
-  transition: transform 0.25s;
+  flex-shrink: 0;
 }
 .current-path {
   display: grid;
@@ -1102,26 +939,6 @@ h2[tabindex='-1']:focus {
 }
 .module-row > svg:last-child {
   color: var(--muted);
-}
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 9px;
-  font-weight: 500;
-  background: var(--subtle);
-  color: var(--muted);
-  white-space: nowrap;
-}
-.status-tag.in-progress {
-  background: var(--primary-soft);
-  color: var(--primary);
-}
-.status-tag.complete {
-  color: var(--success);
-  background: var(--subtle);
 }
 .compact {
   padding: 23px 0;
@@ -1499,36 +1316,6 @@ h2[tabindex='-1']:focus {
   background: var(--surface);
   font-size: 13px;
 }
-.confirm-dialog {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  color: var(--ink);
-  background: var(--surface);
-  max-width: min(500px, calc(100vw - 32px));
-  padding: 0;
-  box-shadow: 0 20px 70px #0003;
-  max-height: 85dvh;
-  overflow-y: auto;
-}
-.confirm-dialog::backdrop {
-  background: #121c315e;
-}
-.dialog-content {
-  padding: 30px;
-}
-.dialog-content h2 {
-  font-size: 21px;
-  margin-bottom: 18px;
-}
-.dialog-content > .muted {
-  font-size: 14px;
-}
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 27px;
-}
 .empty-state {
   text-align: center;
   padding: 65px 25px;
@@ -1601,37 +1388,8 @@ h2[tabindex='-1']:focus {
   min-width: 0;
 }
 .practice-tabs {
-  display: flex;
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
-  gap: 25px;
-}
-.practice-tab {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 62px;
-  background: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  padding: 0 1px;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-}
-.practice-tab.active {
-  border-bottom-color: var(--primary);
-  color: var(--primary);
-  font-weight: 700;
-}
-.practice-tab > span {
-  font-size: 10px;
-  display: grid;
-  place-items: center;
-  width: 19px;
-  height: 19px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
 }
 .practice-body {
   padding: 28px;
@@ -1911,18 +1669,6 @@ h2[tabindex='-1']:focus {
 .resize-none {
   resize: none;
 }
-.response-input {
-  width: 100%;
-  min-height: 220px;
-  padding: 17px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--canvas);
-  color: var(--ink);
-  font-size: 14px;
-  line-height: 1.8;
-  overflow-y: hidden;
-}
 .response-meta {
   font-size: 10px;
   color: var(--muted);
@@ -2055,9 +1801,6 @@ h2[tabindex='-1']:focus {
   .choice-skills {
     font-size: 10px;
   }
-  .onboarding-stage {
-    font-size: 11px;
-  }
 }
 @media (max-width: 1200px) {
   .main-content {
@@ -2084,9 +1827,6 @@ h2[tabindex='-1']:focus {
   }
   .role-choice-top {
     margin-bottom: 18px;
-  }
-  .onboarding-stages {
-    padding: 20px;
   }
   .dashboard-layout {
     grid-template-columns: minmax(0, 1fr) 220px;
@@ -2383,18 +2123,17 @@ h2[tabindex='-1']:focus {
   .desktop-break {
     display: none;
   }
-  .onboarding-stages {
+  .enrollment-stepper {
     padding: 18px 15px;
-    gap: 7px;
   }
-  .onboarding-stage {
-    gap: 5px;
+  .enrollment-stepper .MuiStep-root {
+    padding: 0 4px;
+  }
+  .enrollment-stepper .MuiStepLabel-label {
     font-size: 9px;
   }
-  .onboarding-stage > span:first-child {
-    width: 19px;
-    height: 19px;
-    font-size: 9px;
+  .enrollment-stepper .MuiStepIcon-root {
+    font-size: 20px;
   }
   .enrollment-body {
     padding: 23px 18px;
@@ -2416,7 +2155,7 @@ h2[tabindex='-1']:focus {
   .role-choice {
     padding: 16px;
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) 17px;
+    grid-template-columns: 42px minmax(0, 1fr) 28px;
     column-gap: 13px;
     align-items: center;
   }
@@ -2429,9 +2168,9 @@ h2[tabindex='-1']:focus {
     width: 39px;
     height: 39px;
   }
-  .role-choice-top > .radio-indicator {
-    grid-column: 3;
-    grid-row: 1/4;
+  .role-choice > .choice-radio {
+    top: 50%;
+    transform: translateY(-50%);
   }
   .role-choice > strong {
     grid-column: 2;
@@ -2640,9 +2379,6 @@ h2[tabindex='-1']:focus {
     height: 29px;
     font-size: 10px;
   }
-  .compact .status-tag {
-    font-size: 8px;
-  }
   .compact .module-meta {
     font-size: 9px;
   }
@@ -2771,22 +2507,6 @@ h2[tabindex='-1']:focus {
   .settings-section > p {
     font-size: 12px;
   }
-  .dialog-content {
-    padding: 24px;
-  }
-  .dialog-content h2 {
-    font-size: 19px;
-  }
-  .dialog-content > .muted {
-    font-size: 13px;
-  }
-  .dialog-actions {
-    gap: 10px;
-  }
-  .dialog-actions > .button {
-    flex: 1;
-    font-size: 12px;
-  }
   .storage-banner {
     flex-direction: column;
     align-items: flex-start;
@@ -2809,16 +2529,6 @@ h2[tabindex='-1']:focus {
   .practice-tabs {
     padding: 0 16px;
     gap: 20px;
-  }
-  .practice-tab {
-    font-size: 11px;
-    min-height: 55px;
-    gap: 6px;
-  }
-  .practice-tab > span {
-    font-size: 9px;
-    width: 17px;
-    height: 17px;
   }
   .practice-body {
     padding: 22px 18px;
@@ -2883,10 +2593,6 @@ h2[tabindex='-1']:focus {
   }
   .exercise-prompt {
     font-size: 13px;
-  }
-  .response-input {
-    font-size: 13px;
-    min-height: 240px;
   }
   .review-check {
     font-size: 12px;

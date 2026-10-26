@@ -1,20 +1,47 @@
 'use client';
 import Link from 'next/link';
-import { useRef, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
+import {
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  Paper,
+  Typography,
+  type ButtonProps,
+} from '@mui/material';
 import { Icon } from './icons';
 
+export function Action({
+  href,
+  variant = 'outlined',
+  color,
+  className = '',
+  ...props
+}: ButtonProps) {
+  const shared: ButtonProps = {
+    ...props,
+    variant,
+    color: color ?? (variant === 'contained' ? 'primary' : 'inherit'),
+    className: `button action ${className}`,
+  };
+  return href ? (
+    <Button component={Link} href={href} {...shared} onClick={props.onClick} />
+  ) : (
+    <Button {...shared} onClick={props.onClick} />
+  );
+}
 export function ProgressBar({ value, label }: { value: number; label: string }) {
   return (
-    <div
-      className="progress-track"
-      role="progressbar"
+    <LinearProgress
+      variant="determinate"
+      value={value}
       aria-label={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={value}
-    >
-      <span style={{ transform: `scaleX(${value / 100})` }} />
-    </div>
+      className="progress-track"
+    />
   );
 }
 export function PageHeader({
@@ -32,7 +59,18 @@ export function PageHeader({
     <header className="page-header">
       <div>
         <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{
+            fontFamily: 'Manrope, sans-serif',
+            fontWeight: 700,
+            fontSize: 'clamp(27px, 2.5vw, 36px)',
+            letterSpacing: '-.03em',
+          }}
+        >
+          {title}
+        </Typography>
         <p className="page-description">{description}</p>
       </div>
       {action}
@@ -41,17 +79,17 @@ export function PageHeader({
 }
 export function EmptyPath() {
   return (
-    <div className="empty-state panel">
+    <Paper className="empty-state panel">
       <span className="empty-icon">
         <Icon name="path" size={32} />
       </span>
       <h1>A plan for your next role.</h1>
       <p>Choose your role, experience level, and language to put your preparation in order.</p>
-      <Link href="/onboarding" className="button primary">
+      <Action href="/onboarding" variant="contained">
         Choose my path <Icon name="arrow" />
-      </Link>
+      </Action>
       <p className="small muted">Your progress stays in this browser.</p>
-    </div>
+    </Paper>
   );
 }
 export function ConfirmDialog({
@@ -69,68 +107,55 @@ export function ConfirmDialog({
   onConfirm: () => void;
   danger?: boolean;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const opener = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const cancel = useRef<HTMLButtonElement>(null);
-  const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  function close() {
-    dialog.current?.close();
-    opener.current?.focus();
-  }
+  const id = useId();
   return (
     <>
-      <button
-        ref={opener}
-        type="button"
-        className={`button ${danger ? 'danger-outline' : 'secondary'}`}
-        onClick={() => {
-          dialog.current?.showModal();
-          cancel.current?.focus();
-        }}
-      >
+      <Action color={danger ? 'error' : 'inherit'} onClick={() => setOpen(true)}>
         {trigger}
-      </button>
-      <dialog
-        ref={dialog}
-        className="confirm-dialog"
+      </Action>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
         aria-labelledby={id}
-        onClose={() => opener.current?.focus()}
+        slotProps={{ transition: { onEntered: () => cancel.current?.focus() } }}
       >
-        <div className="dialog-content">
-          <h2 id={id}>{title}</h2>
-          <div className="muted">{children}</div>
-          <div className="dialog-actions">
-            <button ref={cancel} type="button" className="button secondary" onClick={close}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={`button ${danger ? 'danger' : 'primary'}`}
-              onClick={() => {
-                onConfirm();
-                close();
-              }}
-            >
-              {confirmLabel}
-            </button>
-          </div>
-        </div>
-      </dialog>
+        <DialogTitle id={id} sx={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700 }}>
+          {title}
+        </DialogTitle>
+        <DialogContent sx={{ color: 'text.secondary', '& p + p': { mt: 1.5 } }}>
+          {children}
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Action ref={cancel} autoFocus disabled={!open} onClick={() => setOpen(false)}>
+            Cancel
+          </Action>
+          <Action
+            variant="contained"
+            disabled={!open}
+            color={danger ? 'error' : 'primary'}
+            onClick={() => {
+              if (!open) return;
+              onConfirm();
+              setOpen(false);
+            }}
+          >
+            {confirmLabel}
+          </Action>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
 export function StatusTag({ complete, started }: { complete: boolean; started: boolean }) {
   return (
-    <span className={`status-tag ${complete ? 'complete' : started ? 'in-progress' : ''}`}>
-      {complete ? (
-        <>
-          <Icon name="check" size={13} /> Complete
-        </>
-      ) : started ? (
-        'In progress'
-      ) : (
-        'Not started'
-      )}
-    </span>
+    <Chip
+      size="small"
+      variant={complete || started ? 'filled' : 'outlined'}
+      color={complete ? 'success' : started ? 'primary' : 'default'}
+      label={complete ? 'Complete' : started ? 'In progress' : 'Not started'}
+      icon={complete ? <Icon name="check" size={13} /> : undefined}
+    />
   );
 }

@@ -5,13 +5,13 @@ Visual source: `DESIGN.md`. Locale: English; dates use browser locale/timezone.
 
 ## Canonical UI Map
 
-| Capability     | Canonical owner                                                | Source of truth         | Allowed variants               | Verification                       |
-| -------------- | -------------------------------------------------------------- | ----------------------- | ------------------------------ | ---------------------------------- |
-| Form           | Native labeled input/textarea in onboarding, quiz and exercise | Approved spec           | radio / checkbox / response    | E2E validation and accessibility   |
-| Select/Listbox | Native radio groups and buttons                                | Approved spec           | role / tier / language / theme | Keyboard and E2E                   |
-| Scrollbar      | src/app/globals.css                                            | DESIGN.md               | standards and WebKit fallback  | Computed style and viewport checks |
-| Toast          | Progress provider persistent status banner                     | Approved spec           | storage error / conflict       | Resilience E2E                     |
-| CRUD           | Progress domain functions and ConfirmDialog                    | Approved spec lifecycle | enroll / reset / unenroll      | Lifecycle E2E                      |
+| Capability     | Canonical owner                                     | Source of truth         | Allowed variants               | Verification                       |
+| -------------- | --------------------------------------------------- | ----------------------- | ------------------------------ | ---------------------------------- |
+| Form           | Material UI Radio, Checkbox and TextField           | Approved spec           | radio / checkbox / response    | E2E validation and accessibility   |
+| Select/Listbox | Material UI Radio and Button with associated labels | Approved spec           | role / tier / language / theme | Keyboard and E2E                   |
+| Scrollbar      | src/app/globals.css                                 | DESIGN.md               | standards and WebKit fallback  | Computed style and viewport checks |
+| Toast          | Material UI Alert and Redux save status             | Approved spec           | storage error / conflict       | Resilience E2E                     |
+| CRUD           | Progress domain functions and ConfirmDialog         | Approved spec lifecycle | enroll / reset / unenroll      | Lifecycle E2E                      |
 
 ## Flow ledger
 
@@ -23,8 +23,11 @@ snapshot and displays feedback. Retake clears only the current quiz draft/result
 display, retaining history and best results. Paths remain unlocked.
 
 Reset confirms path identity and erases that profile's work while keeping choices.
-Unenroll confirms retention and returns to onboarding. Both use the shared native
-dialog wrapper, focus Cancel initially, support Escape and restore trigger focus.
+Unenroll confirms retention and returns to onboarding. Both use the shared
+Material UI Dialog adapter, focus Cancel initially, support Escape and restore trigger focus.
+Actions are disabled while the dialog is exiting; a cancelled dialog must finish
+closing before a new dialog interaction. Tabs, progress and stepper behavior are
+owned by Material UI. Responsive domain layout remains in the app stylesheet.
 
 ## Recovery
 
@@ -42,5 +45,10 @@ No autosave network operation, external submission, account, money or permission
 Native semantics, named navigation, fieldsets/legends, associated labels, visible
 focus, inline errors and live status. Quiz first-error group receives focus on
 failed submission. Textareas auto-grow and have no user resize handle. Dialogs use
-showModal() for focus/inert behavior. Theme and reduced motion apply across views.
+Material UI Modal focus trapping and restoration. Theme and reduced motion apply across views.
 Local answers never enter URL parameters. No charts depend on color alone.
+
+Redux Toolkit is the single observable source for workspace data, theme, hydration,
+saving and errors. Each provider creates its own store. Persistence, promises,
+Web Locks and DOM effects stay in the controller, outside reducers. The saved JSON
+schema/key and all enrollment/scoring/completion rules are unchanged.

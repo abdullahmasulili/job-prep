@@ -5,6 +5,16 @@ import type { ReactNode } from 'react';
 import { useProgress } from './progress-provider';
 import { Icon, type IconName } from './icons';
 import { ConfirmDialog } from './ui';
+import { Action } from './ui';
+import {
+  Alert,
+  AppBar,
+  CircularProgress,
+  IconButton,
+  List,
+  ListItemButton,
+  Paper,
+} from '@mui/material';
 import { profileLabel, languages } from '@/content/catalog';
 
 const navigation: { href: string; name: string; icon: IconName }[] = [
@@ -21,7 +31,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <aside className="sidebar">
+      <Paper component="aside" className="sidebar" square>
         <Link href="/" className="brand" aria-label="Jobprep home">
           <span className="brand-mark">
             <Icon name="book" size={22} />
@@ -29,9 +39,10 @@ export function Shell({ children }: { children: ReactNode }) {
           jobprep<span className="brand-period">.</span>
         </Link>
         <p className="nav-caption">Your workspace</p>
-        <nav aria-label="Main navigation">
+        <List component="nav" disablePadding aria-label="Main navigation">
           {navigation.map((item) => (
-            <Link
+            <ListItemButton
+              component={Link}
               key={item.href}
               href={item.href}
               className={`nav-link ${(item.href === '/' ? pathname === '/' || pathname === '/onboarding' : pathname.startsWith(item.href) || (item.href === '/path' && pathname.startsWith('/practice'))) ? 'active' : ''}`}
@@ -44,9 +55,9 @@ export function Shell({ children }: { children: ReactNode }) {
             >
               <Icon name={item.icon} />
               <span>{item.name}</span>
-            </Link>
+            </ListItemButton>
           ))}
-        </nav>
+        </List>
         <div className="sidebar-bottom">
           <div className="study-note">
             <Icon name="book" size={21} />
@@ -63,7 +74,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <strong>Your workspace</strong>
               <span>Saved in this browser</span>
             </div>
-            <button
+            <IconButton
               className="icon-button"
               aria-label={`Switch to ${state.theme === 'light' ? 'dark' : 'light'} theme`}
               onClick={() =>
@@ -71,12 +82,19 @@ export function Shell({ children }: { children: ReactNode }) {
               }
             >
               <Icon name={state.theme === 'light' ? 'moon' : 'sun'} />
-            </button>
+            </IconButton>
           </div>
         </div>
-      </aside>
+      </Paper>
       <div className="workspace">
-        <header className="topbar">
+        <AppBar
+          component="header"
+          position="static"
+          color="inherit"
+          elevation={0}
+          className="topbar"
+          sx={{ borderRadius: 0, flexDirection: 'row' }}
+        >
           <span className="breadcrumb">
             Workspace <span>/</span>{' '}
             {pathname.startsWith('/practice')
@@ -100,10 +118,11 @@ export function Shell({ children }: { children: ReactNode }) {
               {profile ? 'Change path' : 'Choose a path'}
             </Link>
           </div>
-        </header>
+        </AppBar>
         <main id="main" className="main-content" tabIndex={-1}>
           {issue && (
-            <div
+            <Alert
+              severity={issue.status === 'unavailable' ? 'warning' : 'error'}
               className={`storage-banner ${issue.status === 'unavailable' ? 'warning' : ''}`}
               role="alert"
             >
@@ -118,9 +137,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 <p>{issue.message}</p>
               </div>
               {issue.status === 'conflict' ? (
-                <button className="button secondary" onClick={reload}>
-                  Load latest progress
-                </button>
+                <Action onClick={reload}>Load latest progress</Action>
               ) : issue.status === 'blocked' ? (
                 <ConfirmDialog
                   trigger="Reset local data"
@@ -135,15 +152,13 @@ export function Shell({ children }: { children: ReactNode }) {
                   </p>
                 </ConfirmDialog>
               ) : (
-                <button className="button secondary" onClick={retry}>
-                  Retry saving
-                </button>
+                <Action onClick={retry}>Retry saving</Action>
               )}
-            </div>
+            </Alert>
           )}
           {!ready ? (
             <div className="loading-state" role="status">
-              <span className="loading-dot" />
+              <CircularProgress size={18} aria-label="Loading progress" />
               Loading your workspace…
             </div>
           ) : (

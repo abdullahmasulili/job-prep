@@ -9,6 +9,7 @@ test('corrupt data is preserved until explicit confirmed recovery', async ({ pag
   expect(await page.evaluate((k) => localStorage.getItem(k), key)).toBe('{broken-data');
   await page.getByRole('button', { name: 'Reset local data', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
   expect(await page.evaluate((k) => localStorage.getItem(k), key)).toBe('{broken-data');
   await page.getByRole('button', { name: 'Reset local data', exact: true }).click();
   await page

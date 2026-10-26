@@ -14,7 +14,9 @@ test('assessment validation, feedback, drafts and completion survive reload and 
   await page.keyboard.press('End');
   await expect(page.getByRole('tab', { name: /Exercise/ })).toBeFocused();
   await page.getByText('Compare with a reference approach', { exact: true }).click();
-  await expect(page.locator('.reference-answer')).toHaveAttribute('open', '');
+  await expect(
+    page.getByRole('button', { name: 'Compare with a reference approach' }),
+  ).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('tab', { name: /Assessment/ }).click();
   await page.getByRole('button', { name: 'Check answers', exact: true }).click();
   await expect(page.locator('main').getByRole('alert')).toContainText('Answer every question');

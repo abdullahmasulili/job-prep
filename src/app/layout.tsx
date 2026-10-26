@@ -9,6 +9,8 @@ import '@fontsource/manrope/700.css';
 import './globals.css';
 import { ProgressProvider } from '@/components/progress-provider';
 import { Shell } from '@/components/shell';
+import { AppTheme } from '@/components/app-theme';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 export const metadata: Metadata = {
   title: 'Jobprep | Your next role. A clearer path.',
   description:
@@ -18,9 +20,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <ProgressProvider>
-          <Shell>{children}</Shell>
-        </ProgressProvider>
+        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+          <ProgressProvider>
+            <AppTheme>
+              <Shell>{children}</Shell>
+            </AppTheme>
+          </ProgressProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

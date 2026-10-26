@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { getModules, profileLabel, languages } from '@/content/catalog';
 import { moduleStatus, pathStats } from '@/lib/progress';
 import { useProgress } from './progress-provider';
-import { PageHeader, ProgressBar } from './ui';
+import { Action, PageHeader, ProgressBar } from './ui';
+import { Paper } from '@mui/material';
 import { ModuleRow } from './path-view';
 import { Onboarding } from './onboarding';
 import { Icon } from './icons';
@@ -32,13 +33,9 @@ export function Dashboard() {
           stats.percent === 100 ? 'Look how far you’ve come.' : 'Your next chapter starts here.'
         }
         description="A focused plan. A little practice. Progress you can see."
-        action={
-          <Link href="/onboarding" className="button secondary">
-            Change path
-          </Link>
-        }
+        action={<Action href="/onboarding">Change path</Action>}
       />
-      <section className="current-path panel">
+      <Paper component="section" className="current-path panel">
         <div className="current-path-main">
           <span className="path-label">Your current path</span>
           <div className="current-path-title">
@@ -71,15 +68,15 @@ export function Dashboard() {
               ? 'Prepare, practice, and reflect.'
               : 'Revisit a module or try the optional extension.'}
           </p>
-          <Link
-            className="button primary"
+          <Action
+            variant="contained"
             href={continueModule ? `/practice/${continueModule.id}` : '/path'}
           >
             {continueModule ? 'Continue practice' : 'Review my path'}
             <Icon name="arrow" size={18} />
-          </Link>
+          </Action>
         </div>
-      </section>
+      </Paper>
       <div className="dashboard-layout">
         <section>
           <div className="section-heading">
@@ -88,14 +85,14 @@ export function Dashboard() {
               View full path
             </Link>
           </div>
-          <div className="panel module-list">
+          <Paper className="panel module-list">
             {core.map((module, index) => (
               <ModuleRow key={module.id} module={module} index={index} compact />
             ))}
-          </div>
+          </Paper>
         </section>
         <aside className="dashboard-aside">
-          <div className="panel practice-snapshot">
+          <Paper className="panel practice-snapshot">
             <p className="eyebrow">Every attempt counts</p>
             <h3>Your practice so far</h3>
             <div className="snapshot-stat">
@@ -112,7 +109,7 @@ export function Dashboard() {
             <Link href="/progress" className="text-link">
               See your progress
             </Link>
-          </div>
+          </Paper>
           <div className="study-tip">
             <Icon name="book" size={22} />
             <h3>Understand the “why.”</h3>
@@ -123,7 +120,7 @@ export function Dashboard() {
           </div>
         </aside>
       </div>
-      <section className="optional-callout">
+      <Paper component="section" className="optional-callout">
         <div className="optional-symbol">
           <Icon name="fullstack" size={25} />
         </div>
@@ -135,10 +132,10 @@ export function Dashboard() {
             independent.
           </p>
         </div>
-        <Link href={profile.aiEnabled ? '/practice/ai' : '/settings'} className="button secondary">
+        <Action href={profile.aiEnabled ? '/practice/ai' : '/settings'}>
           {profile.aiEnabled ? 'Practice AI workflows' : 'Add AI preparation'}
-        </Link>
-      </section>
+        </Action>
+      </Paper>
     </>
   );
 }

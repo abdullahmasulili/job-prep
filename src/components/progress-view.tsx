@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { getModules, profileLabel } from '@/content/catalog';
 import { moduleStatus, pathStats } from '@/lib/progress';
 import { useProgress } from './progress-provider';
-import { EmptyPath, PageHeader, ProgressBar, StatusTag } from './ui';
+import { Action, EmptyPath, PageHeader, ProgressBar, StatusTag } from './ui';
+import { Paper } from '@mui/material';
 import { Icon } from './icons';
 
 export function ProgressView() {
@@ -22,15 +23,15 @@ export function ProgressView() {
         description={`${profileLabel(profile)}. Your activity and results, without a made-up readiness score.`}
       />
       <div className="progress-overview">
-        <section className="panel core-progress">
+        <Paper component="section" className="panel core-progress">
           <div className="progress-heading">
             <span>Core preparation</span>
             <strong>{stats.percent}%</strong>
           </div>
           <ProgressBar value={stats.percent} label="Core modules complete" />
           <p className="muted">{stats.completed} of 4 required modules complete</p>
-        </section>
-        <section className="panel ai-progress">
+        </Paper>
+        <Paper component="section" className="panel ai-progress">
           <Icon name="fullstack" size={22} />
           <div>
             <strong>AI workflow extension</strong>
@@ -43,13 +44,13 @@ export function ProgressView() {
             </p>
             <span className="small muted">Tracked separately from your core path.</span>
           </div>
-        </section>
+        </Paper>
       </div>
       <div className="section-heading">
         <h2>Module breakdown</h2>
         <span className="small muted">Preparation · Quiz · Self-review</span>
       </div>
-      <section className="panel breakdown-list">
+      <Paper component="section" className="panel breakdown-list">
         {modules
           .filter((m) => !m.optional || profile.aiEnabled)
           .map((m) => {
@@ -84,20 +85,18 @@ export function ProgressView() {
               </div>
             );
           })}
-      </section>
+      </Paper>
       <div className="section-heading">
         <h2>Quiz attempt history</h2>
         <span className="small muted">Most recent 20 per module retained</span>
       </div>
-      <section className="panel history-panel">
+      <Paper component="section" className="panel history-panel">
         {history.length === 0 ? (
           <div className="history-empty">
             <Icon name="progress" size={28} />
             <h3>Your first attempt starts the story.</h3>
             <p className="muted">Complete a quiz to see your answers and results here.</p>
-            <Link href="/path" className="button secondary">
-              Choose a module
-            </Link>
+            <Action href="/path">Choose a module</Action>
           </div>
         ) : (
           <ol className="attempt-list">
@@ -126,7 +125,7 @@ export function ProgressView() {
             ))}
           </ol>
         )}
-      </section>
+      </Paper>
       <p className="field-note">
         Quizzes are objectively scored. Written exercises are self-reviewed, and completion records
         preparation activity rather than verified professional competence.

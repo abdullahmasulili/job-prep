@@ -9,6 +9,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Provider, useSelector, useStore } from 'react-redux';
+import {
+  makeStore,
+  workspaceActions,
+  type AppStore,
+  type RootState,
+  type StorageIssue,
+} from '@/lib/workspace-store';
 import {
   emptyStore,
   currentModule,
@@ -20,7 +28,7 @@ import {
 import { readStore, writeStore, recoverStore, STORAGE_KEY } from '@/lib/storage';
 import type { PrepModule } from '@/content/types';
 
-type Issue = { status: 'blocked' | 'unavailable' | 'conflict'; message: string } | null;
+type Issue = StorageIssue;
 type ProgressContext = {
   state: Store;
   profile: Profile | undefined;
@@ -38,26 +46,50 @@ type ProgressContext = {
   retry: () => void;
 };
 const Context = createContext<ProgressContext | null>(null);
+const useAppStore = useStore.withTypes<AppStore>();
 const isLocked = (issue: Issue) => issue?.status === 'blocked' || issue?.status === 'conflict';
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<Store>(emptyStore);
-  const [ready, setReady] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [issue, setIssue] = useState<Issue>(null);
-  const stateRef = useRef(state);
+  const [store] = useState(makeStore);
+  return (
+    <Provider store={store}>
+      <ProgressController>{children}</ProgressController>
+    </Provider>
+  );
+}
+function ProgressController({ children }: { children: ReactNode }) {
+  const store = useAppStore();
+  const { data: state, ready, saving, issue } = useSelector((s: RootState) => s.workspace);
+  const setState = useCallback(
+    (data: Store) => {
+      store.dispatch(workspaceActions.dataReplaced(data));
+    },
+    [store],
+  );
+  const setReady = useCallback(
+    (ready: boolean) => {
+      store.dispatch(workspaceActions.runtimeChanged({ ready }));
+    },
+    [store],
+  );
+  const setSaving = useCallback(
+    (saving: boolean) => {
+      store.dispatch(workspaceActions.runtimeChanged({ saving }));
+    },
+    [store],
+  );
   const revisionRef = useRef(0);
-  const issueRef = useRef<Issue>(null);
-  const readyRef = useRef(false);
   const generation = useRef(0);
   const pending = useRef(0);
   const dirty = useRef(false);
   const blockedRaw = useRef<string | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
-  const showIssue = useCallback((value: Issue) => {
-    issueRef.current = value;
-    setIssue(value);
-  }, []);
+  const showIssue = useCallback(
+    (value: Issue) => {
+      store.dispatch(workspaceActions.runtimeChanged({ issue: value }));
+    },
+    [store],
+  );
   const load = useCallback(() => {
     generation.current++;
     pending.current = 0;
@@ -66,7 +98,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       const result = readStore(window.localStorage);
       blockedRaw.current = result.status === 'blocked' ? result.raw : null;
       if (result.status === 'ready') {
-        stateRef.current = result.state;
         revisionRef.current = result.state.revision;
         dirty.current = false;
         setState(result.state);
@@ -78,9 +109,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         message: 'Browser storage is unavailable. Your work will stay in this session only.',
       });
     }
-    readyRef.current = true;
     setReady(true);
-  }, [showIssue]);
+  }, [showIssue, setReady, setSaving, setState]);
 
   useEffect(() => {
     queueMicrotask(load);
@@ -134,31 +164,30 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           }
         });
     },
-    [showIssue],
+    [showIssue, setSaving],
   );
 
   const change = useCallback(
     (transform: (state: Store) => Store) => {
-      if (!readyRef.current || isLocked(issueRef.current)) return false;
-      const snapshot = transform(stateRef.current);
-      stateRef.current = snapshot;
+      if (!store.getState().workspace.ready || isLocked(store.getState().workspace.issue))
+        return false;
+      const snapshot = transform(store.getState().workspace.data);
       dirty.current = true;
       setState(snapshot);
       enqueue(async (stillCurrent) => {
-        if (isLocked(issueRef.current)) return;
+        if (isLocked(store.getState().workspace.issue)) return;
         const candidate = { ...snapshot, revision: revisionRef.current + 1 };
         const result = await writeStore(
           window.localStorage,
           candidate,
           revisionRef.current,
           navigator.locks,
-          () => stillCurrent() && !isLocked(issueRef.current),
+          () => stillCurrent() && !isLocked(store.getState().workspace.issue),
         );
         if (!stillCurrent() || result.status === 'cancelled') return;
         if (result.status === 'saved') {
           revisionRef.current = candidate.revision;
-          stateRef.current = { ...stateRef.current, revision: candidate.revision };
-          setState(stateRef.current);
+          setState({ ...store.getState().workspace.data, revision: candidate.revision });
           if (pending.current === 1) dirty.current = false;
           showIssue(null);
         } else {
@@ -168,7 +197,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [enqueue, showIssue],
+    [enqueue, showIssue, store, setState],
   );
   const changeModule = useCallback(
     (module: PrepModule, transform: (progress: ModuleProgress) => ModuleProgress) => {
@@ -203,14 +232,13 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       if (result.status === 'saved') {
         const fresh = emptyStore();
         revisionRef.current = 0;
-        stateRef.current = fresh;
         dirty.current = false;
         blockedRaw.current = null;
         setState(fresh);
         showIssue(null);
       } else showIssue(result);
     });
-  }, [enqueue, showIssue]);
+  }, [enqueue, showIssue, setState]);
   const retry = useCallback(() => {
     change((s) => s);
   }, [change]);

@@ -5,7 +5,8 @@ import { getModule, getModules, profileLabel, REVIEWED_ON } from '@/content/cata
 import type { PrepModule } from '@/content/types';
 import { currentModule, moduleStatus, updateProfile } from '@/lib/progress';
 import { useProgress } from './progress-provider';
-import { EmptyPath, ProgressBar } from './ui';
+import { Action, EmptyPath, ProgressBar } from './ui';
+import { Checkbox, Paper, Tab, Tabs } from '@mui/material';
 import { Quiz } from './quiz';
 import { Exercise } from './exercise';
 import { Icon } from './icons';
@@ -17,33 +18,33 @@ export function PracticeView({ moduleId }: { moduleId: string }) {
   const content = getModule(profile, moduleId);
   if (!content)
     return (
-      <div className="empty-state panel">
+      <Paper className="empty-state panel">
         <h1>Module not found</h1>
         <p>This module isn’t part of your preparation path. Choose one from your roadmap.</p>
-        <Link href="/path" className="button primary">
+        <Action href="/path" variant="contained">
           Return to my path
-        </Link>
-      </div>
+        </Action>
+      </Paper>
     );
   if (content.optional && !profile.aiEnabled)
     return (
-      <div className="empty-state panel">
+      <Paper className="empty-state panel">
         <h1>Add AI workflow preparation</h1>
         <p>
           This optional extension is currently disabled. Enable it to practice; any previous work is
           preserved.
         </p>
-        <Link href="/settings" className="button primary">
+        <Action href="/settings" variant="contained">
           Enable in Settings
-        </Link>
-      </div>
+        </Action>
+      </Paper>
     );
   return <PracticeWorkspace key={`${state.activeId}:${moduleId}`} module={content} />;
 }
 function PracticeWorkspace({ module }: { module: PrepModule }) {
   const { state, profile, change, changeModule, locked } = useProgress();
   const [tab, setTab] = useState(0);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const tabRefs = useRef<(HTMLElement | null)[]>([]);
   const id = module.id;
   const activeId = state.activeId;
   useEffect(() => {
@@ -85,46 +86,33 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
             <h3>Module complete</h3>
             <p>You’ve prepared, passed the quiz, and reviewed your response.</p>
           </div>
-          <Link href={next ? `/practice/${next.id}` : '/progress'} className="button secondary">
+          <Action href={next ? `/practice/${next.id}` : '/progress'}>
             {next ? 'Next module' : 'View my progress'}
-          </Link>
+          </Action>
         </div>
       )}
       <div className="practice-layout">
-        <section className="practice-panel panel">
-          <div className="practice-tabs" role="tablist" aria-label="Practice activities">
+        <Paper component="section" className="practice-panel panel">
+          <Tabs
+            value={tab}
+            onChange={(_, value: number) => setTab(value)}
+            selectionFollowsFocus
+            className="practice-tabs"
+            aria-label="Practice activities"
+          >
             {tabs.map((title, i) => (
-              <button
+              <Tab
                 key={title}
                 ref={(el) => {
                   tabRefs.current[i] = el;
                 }}
-                className={`practice-tab ${tab === i ? 'active' : ''}`}
-                type="button"
-                role="tab"
                 id={`tab-${i}`}
                 aria-controls={`panel-${i}`}
-                aria-selected={tab === i}
-                tabIndex={tab === i ? 0 : -1}
-                onClick={() => setTab(i)}
-                onKeyDown={(e) => {
-                  let target: number | undefined;
-                  if (e.key === 'ArrowRight') target = (i + 1) % tabs.length;
-                  if (e.key === 'ArrowLeft') target = (i + tabs.length - 1) % tabs.length;
-                  if (e.key === 'Home') target = 0;
-                  if (e.key === 'End') target = tabs.length - 1;
-                  if (target !== undefined) {
-                    e.preventDefault();
-                    setTab(target);
-                    tabRefs.current[target]?.focus();
-                  }
-                }}
-              >
-                <span aria-hidden="true">{i + 1}</span>
-                {title}
-              </button>
+                label={title}
+                value={i}
+              />
             ))}
-          </div>
+          </Tabs>
           {tabs.map((_, i) => (
             <div
               key={i}
@@ -148,8 +136,7 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
                         className={`lesson-step ${progress.prep[stepIndex] ? 'checked' : ''}`}
                       >
                         <label className="lesson-check">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={progress.prep[stepIndex] ?? false}
                             disabled={locked}
                             onChange={(e) => {
@@ -188,8 +175,8 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
                     </p>
                   </div>
                   <div className="practice-next">
-                    <button
-                      className="button primary"
+                    <Action
+                      variant="contained"
                       type="button"
                       onClick={() => {
                         setTab(1);
@@ -197,7 +184,7 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
                       }}
                     >
                       Start assessment <Icon name="arrow" size={17} />
-                    </button>
+                    </Action>
                   </div>
                 </div>
               ) : i === 1 ? (
@@ -207,8 +194,8 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
               )}
             </div>
           ))}
-        </section>
-        <aside className="practice-sidebar panel">
+        </Paper>
+        <Paper component="aside" className="practice-sidebar panel">
           <h3>To complete this module</h3>
           <ul className="completion-requirements">
             {[
@@ -231,7 +218,7 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
             <br />
             Your response is self-reviewed. Passing the quiz does not verify an implementation.
           </p>
-        </aside>
+        </Paper>
       </div>
     </>
   );

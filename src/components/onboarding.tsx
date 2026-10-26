@@ -6,6 +6,8 @@ import type { Role, Tier, Language } from '@/content/types';
 import { enroll } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Icon } from './icons';
+import { Checkbox, Paper, Radio, Step, StepLabel, Stepper } from '@mui/material';
+import { Action } from './ui';
 
 const stages = ['Your role', 'Experience', 'Language', 'Your plan'];
 export function Onboarding() {
@@ -67,18 +69,23 @@ export function Onboarding() {
         </p>
       </header>
       <div className="enrollment-layout">
-        <section className="enrollment-panel panel" aria-label="Build your preparation path">
-          <div className="onboarding-stages" aria-label="Enrollment steps">
+        <Paper
+          component="section"
+          className="enrollment-panel panel"
+          aria-label="Build your preparation path"
+        >
+          <Stepper
+            alternativeLabel
+            activeStep={step}
+            className="enrollment-stepper"
+            aria-label="Enrollment steps"
+          >
             {stages.map((stage, i) => (
-              <div
-                key={stage}
-                className={`onboarding-stage ${i === step ? 'current' : ''} ${i < step ? 'done' : ''}`}
-              >
-                <span>{i < step ? <Icon name="check" size={13} /> : i + 1}</span>
-                <span>{stage}</span>
-              </div>
+              <Step key={stage} completed={i < step}>
+                <StepLabel>{stage}</StepLabel>
+              </Step>
             ))}
-          </div>
+          </Stepper>
           <div className="enrollment-body">
             <p className="step-label">Step {step + 1} of 4</p>
             <h2 ref={heading} tabIndex={-1}>
@@ -100,9 +107,9 @@ export function Onboarding() {
                       className={`choice-card role-choice ${role === r.id ? 'selected' : ''}`}
                       key={r.id}
                     >
-                      <input
-                        className="choice-input"
-                        type="radio"
+                      <Radio
+                        className="choice-radio"
+                        disabled={locked}
                         name="role"
                         value={r.id}
                         checked={role === r.id}
@@ -117,7 +124,6 @@ export function Onboarding() {
                         <span className="role-icon">
                           <Icon name={r.id} size={26} />
                         </span>
-                        <span className="radio-indicator" />
                       </span>
                       <strong>{r.label}</strong>
                       <span className="choice-description">{r.description}</span>
@@ -133,9 +139,9 @@ export function Onboarding() {
                       className={`choice-card tier-choice ${tier === t.id ? 'selected' : ''}`}
                       key={t.id}
                     >
-                      <input
-                        className="choice-input"
-                        type="radio"
+                      <Radio
+                        className="choice-radio"
+                        disabled={locked}
                         name="tier"
                         checked={tier === t.id}
                         onChange={() => {
@@ -152,7 +158,6 @@ export function Onboarding() {
                         <strong>{t.label}</strong>
                         <span className="choice-description">{t.description}</span>
                       </span>
-                      <span className="radio-indicator" />
                     </label>
                   ))}
                 </div>
@@ -165,9 +170,9 @@ export function Onboarding() {
                         className={`choice-card language-choice ${language === l.id ? 'selected' : ''}`}
                         key={l.id}
                       >
-                        <input
-                          className="choice-input"
-                          type="radio"
+                        <Radio
+                          className="choice-radio"
+                          disabled={locked}
                           name="language"
                           checked={language === l.id}
                           onChange={() => {
@@ -182,7 +187,6 @@ export function Onboarding() {
                           <strong>{l.label}</strong>
                           <span className="choice-description">{l.description}</span>
                         </span>
-                        <span className="radio-indicator" />
                       </label>
                     ))}
                   </div>
@@ -211,7 +215,11 @@ export function Onboarding() {
                     </div>
                   </div>
                   <label className={`ai-option ${ai ? 'selected' : ''}`}>
-                    <input type="checkbox" checked={ai} onChange={(e) => setAi(e.target.checked)} />
+                    <Checkbox
+                      disabled={locked}
+                      checked={ai}
+                      onChange={(e) => setAi(e.target.checked)}
+                    />
                     <span>
                       <strong>Include AI workflow preparation</strong>
                       <span>
@@ -241,8 +249,8 @@ export function Onboarding() {
               {step === 0 ? (
                 'A plan built around your goals'
               ) : (
-                <button
-                  className="text-button"
+                <Action
+                  variant="text"
                   type="button"
                   onClick={() => {
                     setError('');
@@ -250,16 +258,16 @@ export function Onboarding() {
                   }}
                 >
                   Back
-                </button>
+                </Action>
               )}
             </span>
             {step < 3 ? (
-              <button className="button primary" onClick={advance} disabled={locked}>
+              <Action variant="contained" onClick={advance} disabled={locked}>
                 Continue <Icon name="arrow" size={17} />
-              </button>
+              </Action>
             ) : (
-              <button
-                className="button primary"
+              <Action
+                variant="contained"
                 disabled={locked}
                 onClick={() => {
                   if (
@@ -272,10 +280,10 @@ export function Onboarding() {
                 }}
               >
                 Build my path <Icon name="arrow" size={17} />
-              </button>
+              </Action>
             )}
           </div>
-        </section>
+        </Paper>
         <aside className="path-preview">
           <p className="eyebrow">Your preparation, in order</p>
           <h3>More than a question bank.</h3>
@@ -313,9 +321,8 @@ export function Onboarding() {
           <h3>{profile ? 'Your saved paths' : 'Pick up where you left off'}</h3>
           <div className="saved-path-list">
             {Object.entries(state.profiles).map(([id, p]) => (
-              <button
+              <Action
                 key={id}
-                className="button secondary"
                 disabled={locked}
                 onClick={() => {
                   if (change((s) => ({ ...s, activeId: id }))) router.push('/');
@@ -324,7 +331,7 @@ export function Onboarding() {
                 {tiers.find((t) => t.id === p.tier)?.label}{' '}
                 {roles.find((r) => r.id === p.role)?.label} ·{' '}
                 {languagesFor(p.role).find((l) => l.id === p.language)?.label}
-              </button>
+              </Action>
             ))}
           </div>
         </section>
