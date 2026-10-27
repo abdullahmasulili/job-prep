@@ -47,12 +47,13 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
   const tabRefs = useRef<(HTMLElement | null)[]>([]);
   const id = module.id;
   const activeId = state.activeId;
+  const lastModule = profile?.lastModule;
   useEffect(() => {
-    if (activeId)
+    if (activeId && lastModule !== id)
       change((s) =>
         updateProfile(s, activeId, (p) => (p.lastModule === id ? p : { ...p, lastModule: id })),
       );
-  }, [activeId, id, change]);
+  }, [activeId, id, lastModule, change]);
   if (!profile) return null;
   const progress = currentModule(module, profile.modules[module.id]);
   const status = moduleStatus(module, progress);
