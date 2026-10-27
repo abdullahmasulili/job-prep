@@ -1,0 +1,8 @@
+allowBuilds:
+  esbuild: true
+  fsevents: true
+  unrs-resolver: true
+
+# Preserve the version already recorded in the npm lockfile during migration.
+minimumReleaseAgeExclude:
+  - baseline-browser-mapping@2.11.33
