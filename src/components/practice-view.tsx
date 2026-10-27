@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { getModule, getModules, profileLabel, REVIEWED_ON } from '@/content/catalog';
 import type { PrepModule } from '@/content/types';
-import { currentModule, moduleStatus, updateProfile } from '@/lib/progress';
+import { currentModule, moduleStatus, updateProfile, exerciseList } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Action, EmptyPath, ProgressBar } from './ui';
-import { Checkbox, Paper, Tab, Tabs } from '@mui/material';
+import { Alert, Checkbox, Paper, Tab, Tabs } from '@mui/material';
 import { Quiz } from './quiz';
 import { Exercise } from './exercise';
 import { Icon } from './icons';
@@ -76,15 +76,24 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
             {module.minutes} min estimate
           </span>
           <span>{profileLabel(profile)}</span>
-          <span>4 questions · 1 self-reviewed exercise</span>
+          <span>
+            {module.questions.length} questions in bank · {exerciseList(module).length}{' '}
+            self-reviewed exercises
+          </span>
         </div>
       </header>
+      {profile.modules[module.id] && profile.modules[module.id].version !== module.version && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          This module has new questions. Earlier results and written drafts are kept. Complete a
+          fresh assessment and review two exercises for the updated module.
+        </Alert>
+      )}
       {status.complete && (
         <div className="practice-complete" role="status">
           <Icon name="check" size={22} />
           <div>
             <h3>Module complete</h3>
-            <p>You’ve prepared, passed the quiz, and reviewed your response.</p>
+            <p>You’ve prepared, passed the quiz, and reviewed two exercises.</p>
           </div>
           <Action href={next ? `/practice/${next.id}` : '/progress'}>
             {next ? 'Next module' : 'View my progress'}
@@ -201,7 +210,10 @@ function PracticeWorkspace({ module }: { module: PrepModule }) {
             {[
               ['Preparation checklist complete', status.preparation],
               ['Assessment passed (75%+)', status.quiz],
-              ['Response written & self-reviewed', status.exercise],
+              [
+                `${status.reviewedExercises}/${status.requiredExercises} exercises written & self-reviewed`,
+                status.exercise,
+              ],
             ].map(([label, done]) => (
               <li className={done ? 'met' : ''} key={String(label)}>
                 <Icon name={done ? 'check' : 'clock'} size={15} />

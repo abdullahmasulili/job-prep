@@ -142,3 +142,59 @@ test('overlapping saves serialize the revision check and only one stale snapshot
   assert.deepEqual([first.status, result.status].sort(), ['conflict', 'saved']);
   assert.equal(Object.keys(JSON.parse(raw!).profiles).length, 1);
 });
+
+test('malformed session and exercise fields are blocked without erasing saved data', () => {
+  const base = {
+    version: 2,
+    prep: [],
+    review: [],
+    response: '',
+    answers: {},
+    submitted: false,
+    attempts: [],
+    best: null,
+  };
+  const invalid = [
+    { session: { questionIds: ['a', 'a'], choiceOrders: { a: [0, 1, 2, 3] } } },
+    { session: { questionIds: ['a'], choiceOrders: { a: [0, 0, 2, 3] } } },
+    { round: -1 },
+    { seenAt: { a: 'yesterday' } },
+    { exerciseDrafts: { debug: { response: 42, review: [] } } },
+  ];
+  for (const extra of invalid) {
+    const state = enroll(emptyStore(), config, false);
+    state.profiles[state.activeId!].modules.aptitude = { ...base, ...extra } as never;
+    const raw = JSON.stringify(state);
+    const storage = memory(raw);
+    assert.equal(readStore(storage).status, 'blocked');
+    assert.equal(storage.getItem(STORAGE_KEY), raw);
+  }
+});
+
+test('version-one drafts and four-question attempt history remain readable', () => {
+  const state = enroll(emptyStore(), config, false);
+  const oldAttempt = {
+    id: 'old',
+    version: 1,
+    answers: { a: 0, b: 1, c: 2, d: 3 },
+    score: 75,
+    at: '2026-10-26T00:00:00Z',
+  };
+  state.profiles[state.activeId!].modules.aptitude = {
+    version: 1,
+    prep: [true],
+    review: [true],
+    response: 'Keep the original written work',
+    answers: oldAttempt.answers,
+    submitted: true,
+    attempts: [oldAttempt],
+    best: oldAttempt,
+  };
+  const loaded = readStore(memory(JSON.stringify(state)));
+  assert.equal(loaded.status, 'ready');
+  if (loaded.status === 'ready') {
+    const saved = loaded.state.profiles[loaded.state.activeId!].modules.aptitude;
+    assert.equal(saved.response, 'Keep the original written work');
+    assert.equal(saved.attempts[0].score, 75);
+  }
+});

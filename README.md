@@ -29,19 +29,26 @@ pnpm start
 ## Preparation and progress
 
 - Four required modules per role/tier: aptitude, fundamentals, practical
-  engineering, and interviews. Each contains a guide, four MCQs with explanations,
-  and a self-reviewed exercise. All modules are available immediately.
+  engineering, and interviews. Each path has 120 core questions: 24 aptitude,
+  36 fundamentals, 36 practical, and 24 interview questions, with choice explanations,
+  and multiple self-reviewed exercises. All modules are available immediately.
 - Frontend supports JavaScript/TypeScript. Backend and fullstack also support
   Python, Java, C#, and Go. Fullstack browser scenarios use JavaScript/TypeScript.
 - A module is complete after its preparation checklist, a quiz result of at
-  least 75%, and a nonempty response with its self-review checklist completed.
+  least 75%, and any two exercises with nonempty responses and completed self-review.
+  There are 3 aptitude, 4 fundamentals, 4 practical, and 6 interview exercises.
+  Each response and review saves independently. Editing a response clears its review.
+- Assessments draw 12 questions from the module bank, balancing topics among equally
+  recent questions. Retakes prioritize unseen questions, then least recently seen ones.
+  Question and choice order vary; reloading preserves the current session and answers.
 - Retakes preserve the best result and the most recent 20 attempts per module.
   A lower retake score does not remove a previous pass. Content-version changes
-  invalidate incompatible quiz results for completion but retain history.
+  invalidate incompatible quiz results for completion but retain history and written drafts.
+  Updated exercises require fresh self-review. The expanded curriculum is version 2.
 - Reset erases only the selected path's work. Unenroll leaves its work saved;
   re-enroll in the same role/tier/language to resume. Different profiles are isolated.
-- AI preparation is optional, uses supplied scenarios rather than a live model,
-  and never changes required completion. Disabling it retains its work.
+- AI preparation adds 16 questions and 3 exercises, uses supplied scenarios rather
+  than a live model, and never changes required completion. Disabling it retains its work.
 
 Progress is stored under `jobprep.progress.v1` in this origin's localStorage.
 It does not sync between browsers, devices, or origins (including different
@@ -56,7 +63,7 @@ Quizzes are auto-scored; written responses are not executed or AI-graded.
 Completion measures preparation activity, not certified job readiness. The bundled
 content is reviewed with app updates rather than refreshed daily. Guides link to
 MDN, SFIA, OWASP, HTTP specifications, language documentation and responsible AI
-guidance. The documented reference review date is October 26, 2026. Language
+guidance. The documented reference review date is October 27, 2026. Language
 choices are curated ecosystem options, not a geographic hiring-demand ranking.
 
 ## Verify
@@ -80,8 +87,9 @@ responsive layouts and automated accessibility checks.
 
 ## Project structure
 
-- `src/content/`: original question banks, guides, language variants and references.
-- `src/lib/progress.ts`: scoring, completion and enrollment transitions.
+- `src/content/`: authored question banks, guides, language variants and references.
+- `src/lib/progress.ts`: scoring, completion, independent exercise drafts and enrollment transitions.
+- `src/lib/sessions.ts`: stable assessment sessions, question coverage and retake selection.
 - `src/lib/storage.ts`: schema validation and revision-aware local persistence.
 - `src/lib/workspace-store.ts`: per-provider Redux Toolkit store for progress and save status.
 - `src/components/progress-provider.tsx`: Redux-backed commands, hydration and coordinated browser persistence.

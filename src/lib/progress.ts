@@ -1,8 +1,10 @@
 import type { PrepModule, ProfileConfig } from '../content/types';
+import { assessmentModule, getSession, SESSION_SIZE, type QuizSession } from './sessions';
 
 export type Attempt = {
   id: string;
   version: number;
+  questionIds?: string[];
   answers: Record<string, number>;
   score: number;
   at: string;
@@ -16,6 +18,10 @@ export type ModuleProgress = {
   attempts: Attempt[];
   best: Attempt | null;
   submitted: boolean;
+  session?: QuizSession;
+  round?: number;
+  seenAt?: Record<string, number>;
+  exerciseDrafts?: Record<string, { response: string; review: boolean[] }>;
 };
 export type Profile = ProfileConfig & {
   aiEnabled: boolean;
@@ -81,6 +87,11 @@ export function currentModule(module: PrepModule, saved?: ModuleProgress): Modul
   return {
     ...emptyModule(module),
     response: saved.response,
+    exerciseDrafts:
+      saved.exerciseDrafts &&
+      Object.fromEntries(
+        Object.entries(saved.exerciseDrafts).map(([id, draft]) => [id, { ...draft, review: [] }]),
+      ),
     attempts: saved.attempts,
     best: saved.best,
   };
@@ -104,20 +115,32 @@ export function recordAttempt(
   answers: Record<string, number>,
   at = new Date().toISOString(),
 ): ModuleProgress {
-  const score = scoreQuiz(module, answers);
+  const session = getSession(module, progress);
+  const selected = assessmentModule(module, progress);
+  const score = scoreQuiz(selected, answers);
+  const canonical = Object.fromEntries(session.questionIds.map((id) => [id, answers[id]]));
   const attempt: Attempt = {
     id: crypto.randomUUID(),
     version: module.version,
-    answers: { ...answers },
+    questionIds: session.questionIds,
+    answers: canonical,
     score,
     at,
   };
   const p = currentModule(module, progress);
+  const previousScore = attemptScore(module, p.best);
   const best =
-    !p.best || p.best.version !== module.version || score >= p.best.score ? attempt : p.best;
+    previousScore === null || score >= previousScore
+      ? attempt
+      : { ...p.best!, score: previousScore };
   return {
     ...p,
-    answers: { ...answers },
+    answers: canonical,
+    session,
+    seenAt: {
+      ...p.seenAt,
+      ...Object.fromEntries(session.questionIds.map((id) => [id, p.round ?? 0])),
+    },
     attempts: [...p.attempts, attempt].slice(-20),
     best,
     submitted: true,
@@ -126,16 +149,17 @@ export function recordAttempt(
 export function moduleStatus(module: PrepModule, saved?: ModuleProgress) {
   const p = currentModule(module, saved);
   const preparation = module.steps.every((_, i) => p.prep[i] === true);
-  let quiz = false;
-  try {
-    quiz = !!p.best && p.best.version === module.version && scoreQuiz(module, p.best.answers) >= 75;
-  } catch {
-    /* An incompatible answer snapshot cannot grant completion. */
-  }
-  const exercise =
-    p.response.trim().length > 0 && module.exercise.criteria.every((_, i) => p.review[i] === true);
+  const quiz = (attemptScore(module, p.best) ?? -1) >= 75;
+  const exercises = exerciseList(module);
+  const reviewedExercises = exercises.filter((e) => {
+    const draft = exerciseProgress(module, p, e.id);
+    return draft.response.trim().length > 0 && e.criteria.every((_, i) => draft.review[i] === true);
+  }).length;
+  const exercise = reviewedExercises >= Math.min(2, exercises.length);
   return {
     preparation,
+    reviewedExercises,
+    requiredExercises: Math.min(2, exercises.length),
     quiz,
     exercise,
     complete: preparation && quiz && exercise,
@@ -145,6 +169,7 @@ export function moduleStatus(module: PrepModule, saved?: ModuleProgress) {
       (p.prep.some(Boolean) ||
         Object.keys(p.answers).length > 0 ||
         p.response.length > 0 ||
+        Object.values(p.exerciseDrafts ?? {}).some((d) => d.response.length > 0) ||
         p.attempts.length > 0),
   };
 }
@@ -158,4 +183,48 @@ export function pathStats(modules: PrepModule[], profile: Profile) {
     percent: Math.round((completed / core.length) * 100),
     aiCompleted: ai ? moduleStatus(ai, profile.modules[ai.id]).complete : false,
   };
+}
+
+export function exerciseList(module: PrepModule) {
+  return module.exercises ?? [{ ...module.exercise, id: 'original' }];
+}
+export function exerciseProgress(module: PrepModule, progress: ModuleProgress, id: string) {
+  if (id === exerciseList(module)[0].id)
+    return { response: progress.response, review: progress.review };
+  return progress.exerciseDrafts?.[id] ?? { response: '', review: [] };
+}
+export function updateExercise(
+  module: PrepModule,
+  progress: ModuleProgress,
+  id: string,
+  draft: { response: string; review: boolean[] },
+) {
+  if (!exerciseList(module).some((e) => e.id === id)) throw new Error('Unknown exercise');
+  if (id === exerciseList(module)[0].id) return { ...progress, ...draft };
+  return { ...progress, exerciseDrafts: { ...progress.exerciseDrafts, [id]: draft } };
+}
+
+export function attemptScore(
+  module: PrepModule,
+  attempt: Attempt | null | undefined,
+): number | null {
+  if (!attempt || attempt.version !== module.version) return null;
+  const ids = attempt.questionIds;
+  if (
+    !ids ||
+    ids.length !== Math.min(SESSION_SIZE, module.questions.length) ||
+    new Set(ids).size !== ids.length
+  )
+    return null;
+  const questions: PrepModule['questions'] = [];
+  for (const id of ids) {
+    const question = module.questions.find((q) => q.id === id);
+    if (!question) return null;
+    questions.push(question);
+  }
+  try {
+    return scoreQuiz({ ...module, questions }, attempt.answers);
+  } catch {
+    return null;
+  }
 }
