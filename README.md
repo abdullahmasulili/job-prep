@@ -8,11 +8,12 @@ progress.
 
 ## Run locally
 
-Use Node.js 20.9 or newer and npm. The lockfile records the installed versions.
+Use Node.js 22.13 or newer and pnpm 12.3.4. The `packageManager` field pins pnpm,
+and `pnpm-lock.yaml` records the installed dependency versions.
 
 ```sh
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 Open [localhost:3000](http://localhost:3000). No environment variables, database,
@@ -21,8 +22,8 @@ account, or API key are required.
 For a production build:
 
 ```sh
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ## Preparation and progress
@@ -61,18 +62,18 @@ choices are curated ecosystem options, not a geographic hiring-demand ranking.
 ## Verify
 
 ```sh
-npm test
-npm run typecheck
-npm run lint
-npm run format:check
-npm run build
-npm run test:e2e
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm build
+pnpm test:e2e
 ```
 
 Browser tests use Playwright with an installed Google Chrome (`channel: 'chrome'`)
 and start a local Next.js server on port 3100 if one is not already running.
 To use bundled Chromium instead, remove the channel setting in
-`playwright.config.ts` and install it with `npx playwright install chromium`.
+`playwright.config.ts` and install it with `pnpm exec playwright install chromium`.
 The suite covers onboarding, assessment feedback, completion, drafts, retakes,
 profile isolation, reset, unenrollment, AI toggles, storage failure/conflicts,
 responsive layouts and automated accessibility checks.
