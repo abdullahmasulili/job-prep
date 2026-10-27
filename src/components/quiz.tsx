@@ -1,7 +1,8 @@
 'use client';
 import { useRef, useState } from 'react';
 import type { PrepModule } from '@/content/types';
-import { recordAttempt, scoreQuiz, type ModuleProgress } from '@/lib/progress';
+import { assessmentModule, getSession, startRetake } from '@/lib/sessions';
+import { recordAttempt, scoreQuiz, attemptScore, type ModuleProgress } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Icon } from './icons';
 import { Alert, Radio } from '@mui/material';
@@ -12,13 +13,17 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
   const [error, setError] = useState('');
   const questionRefs = useRef<(HTMLFieldSetElement | null)[]>([]);
   const resultHeading = useRef<HTMLHeadingElement>(null);
+  const session = getSession(module, progress);
+  const assessment = assessmentModule(module, progress);
   const latest = progress.attempts.at(-1);
-  const submitted = progress.submitted && latest?.version === module.version;
-  const passed = submitted && latest.score >= 75;
+  const latestScore = attemptScore(module, latest);
+  const bestScore = attemptScore(module, progress.best);
+  const submitted = progress.submitted && latestScore !== null;
+  const passed = submitted && latestScore >= 75;
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      scoreQuiz(module, progress.answers);
+      scoreQuiz(assessment, progress.answers);
       changeModule(module, (p) => recordAttempt(module, p, p.answers));
       setError('');
       requestAnimationFrame(() => {
@@ -27,7 +32,7 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
       });
     } catch {
       setError('Answer every question before checking your answers.');
-      const index = module.questions.findIndex((q) => progress.answers[q.id] === undefined);
+      const index = assessment.questions.findIndex((q) => progress.answers[q.id] === undefined);
       questionRefs.current[index]?.querySelector('input')?.focus();
     }
   }
@@ -38,22 +43,19 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
           <h2 ref={resultHeading} tabIndex={-1}>
             {passed ? 'Assessment passed' : 'A useful place to practice'}
           </h2>
-          <strong>{latest.score}%</strong>
+          <strong>{latestScore}%</strong>
           <p>
             {passed
               ? 'You met the practice threshold. Review the explanations, then apply what you learned in the exercise.'
               : 'Review the explanations below and revisit the preparation steps. You can try again whenever you’re ready.'}
           </p>
-          <span className="result-best">
-            Best result:{' '}
-            {progress.best?.version === module.version ? progress.best.score : latest.score}%
-          </span>
+          <span className="result-best">Best result: {bestScore ?? latestScore}%</span>
           <Action
             type="button"
             disabled={locked}
             onClick={() => {
               setError('');
-              changeModule(module, (p) => ({ ...p, submitted: false, answers: {} }));
+              changeModule(module, (p) => startRetake(module, p));
             }}
           >
             Try again
@@ -63,13 +65,19 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
         <div className="quiz-intro">
           <div>
             <h2>Check your understanding.</h2>
-            <p>4 questions · 75% to pass · No time limit</p>
+            <p>
+              {assessment.questions.length} questions from a bank of {module.questions.length} · 75%
+              to pass · No time limit
+            </p>
+            <p className="small muted">
+              Retakes prioritize unseen questions, then the least recently practiced.
+            </p>
           </div>
           <Icon name="book" size={24} />
         </div>
       )}
       <form noValidate onSubmit={submit} aria-label="Multiple-choice assessment">
-        {module.questions.map((question, index) => (
+        {assessment.questions.map((question, index) => (
           <fieldset
             data-question-id={question.id}
             className="quiz-question"
@@ -84,7 +92,7 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
           >
             <legend>
               <span className="question-index">
-                Question {index + 1} of {module.questions.length}
+                Question {index + 1} of {assessment.questions.length}
               </span>
               {question.prompt}
             </legend>
@@ -94,7 +102,8 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
               </pre>
             )}
             <div className="quiz-choices">
-              {question.choices.map((choice, choiceIndex) => {
+              {session.choiceOrders[question.id].map((choiceIndex, displayIndex) => {
+                const choice = question.choices[choiceIndex];
                 const selected = progress.answers[question.id] === choiceIndex;
                 const correct = question.correct === choiceIndex;
                 return (
@@ -111,13 +120,14 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
                         setError('');
                         changeModule(module, (p) => ({
                           ...p,
+                          session,
                           answers: { ...p.answers, [question.id]: choiceIndex },
                         }));
                       }}
                     />
                     <span>
                       <span className="choice-letter" aria-hidden="true">
-                        {String.fromCharCode(65 + choiceIndex)}.
+                        {String.fromCharCode(65 + displayIndex)}.
                       </span>
                       {choice.text}
                       {submitted && (
@@ -155,8 +165,8 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
       </form>
       {submitted && (
         <p className="field-note">
-          A passing quiz is one part of this module. Complete the preparation checklist and
-          self-reviewed exercise to finish the module.
+          A passing quiz is one part of this module. Complete the preparation checklist and two
+          self-reviewed exercises to finish the module.
         </p>
       )}
     </div>

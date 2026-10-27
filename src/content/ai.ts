@@ -1,122 +1,6 @@
-import { q, sources, type Blueprint, type Role, type Tier } from './types';
+import { sources, type Guide, type Role, type Tier } from './types';
 
-export function aiWorkflow(role: Role, tier: Tier): Blueprint {
-  const questions = [
-    q(
-      `ai-${tier}-1`,
-      tier === 'junior'
-        ? 'What belongs in a useful request to a coding assistant?'
-        : tier === 'mid'
-          ? 'An assistant must change an existing feature safely. What context is most useful?'
-          : 'Before delegating a migration plan to an assistant, what should you define?',
-      [
-        'A bounded task, relevant contracts, constraints, acceptance criteria and verification',
-        'Explicit scope and verifiable outcomes let you assess the output and reduce irrelevant or unsafe changes.',
-      ],
-      [
-        [
-          'A vague request to make everything better',
-          'Without scope or acceptance criteria, the output cannot be evaluated reliably.',
-        ],
-        [
-          'Every private file and production secret',
-          'More context is not always better; secrets and unrelated private data should not be supplied.',
-        ],
-        [
-          'Only the desired line count',
-          'Code volume is not a functional or quality acceptance criterion.',
-        ],
-      ],
-    ),
-    q(
-      `ai-${tier}-2`,
-      'Generated code looks plausible and the assistant says its tests passed. What is the next step?',
-      [
-        'Inspect the change and independently run relevant checks against the requirement',
-        'The assertion is not evidence. Review the diff, verify the intended behavior, and run checks yourself before accepting the change.',
-      ],
-      [
-        [
-          'Accept it because the explanation is confident',
-          'Confidence of wording does not establish functional correctness or safety.',
-        ],
-        [
-          'Check formatting only',
-          'Formatting does not expose logic, authorization, or regression errors.',
-        ],
-        [
-          'Ask the same assistant to declare it correct again',
-          'Repeating an unsupported assertion does not provide independent verification.',
-        ],
-      ],
-    ),
-    q(
-      `ai-${tier}-3`,
-      'A generated patch adds a library you do not recognize. What should happen before adoption?',
-      [
-        'Verify it exists, check its official API, suitability, maintenance and security implications',
-        'Generated dependencies can be fictional or unsuitable. Verify the actual package and evaluate the cost before adding it.',
-      ],
-      [
-        [
-          'Install it because its name sounds familiar',
-          'A plausible package name is not evidence of authenticity or suitability.',
-        ],
-        [
-          'Assume the model checked the current version',
-          'Models may rely on stale or incorrect API knowledge; current documentation matters.',
-        ],
-        [
-          'Disable dependency checks to unblock the patch',
-          'Removing verification increases exposure instead of resolving the uncertainty.',
-        ],
-      ],
-    ),
-    q(
-      `ai-${tier}-4`,
-      tier === 'senior'
-        ? 'Who remains accountable for accepting an AI-assisted architecture change?'
-        : 'A generated fix passes a happy-path test. What evidence is still needed?',
-      tier === 'senior'
-        ? [
-            'The human/team accepting it, using review criteria and operational evidence',
-            'An assistant can propose changes, but responsibility for review, risk and acceptance remains with the people shipping the system.',
-          ]
-        : [
-            'Tests for relevant edge cases, failure paths and regressions',
-            'A single success case does not establish correctness under missing input, failure, concurrency or existing behavior.',
-          ],
-      tier === 'senior'
-        ? [
-            [
-              'The model provider alone',
-              'The provider does not know the complete context or own your production acceptance decision.',
-            ],
-            [
-              'No one if it was automatically generated',
-              'Automation does not remove accountability for the behavior shipped to users.',
-            ],
-            [
-              'Only the person who typed the prompt, without review',
-              'Accountability requires a suitable team review process, not merely prompt authorship.',
-            ],
-          ]
-        : [
-            [
-              'Nothing; one passing test proves correctness',
-              'One case cannot cover all relevant behavior or demonstrate absence of regressions.',
-            ],
-            [
-              'A more enthusiastic explanation',
-              'Tone has no relationship to whether failure and boundary conditions work.',
-            ],
-            [
-              'More generated code before any testing',
-              'Increasing the patch without validation can compound the original risk.',
-            ],
-          ],
-    ),
-  ];
+export function aiWorkflow(role: Role, tier: Tier): Guide {
   const bug = {
     frontend:
       'The suggested button is a clickable div with no keyboard behavior and no error state.',
@@ -129,7 +13,6 @@ export function aiWorkflow(role: Role, tier: Tier): Blueprint {
     title: 'AI-assisted engineering',
     description:
       'Practice giving useful context, inspecting generated changes, and taking responsibility for verification.',
-    questions,
     steps: [
       {
         title: 'Frame a bounded task',

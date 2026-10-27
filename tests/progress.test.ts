@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assessmentModule } from '../src/lib/sessions';
 import { getModules } from '../src/content/catalog';
 import {
   emptyStore,
@@ -12,43 +13,58 @@ import {
   pathStats,
   recordAttempt,
   emptyModule,
+  exerciseList,
+  updateExercise,
 } from '../src/lib/progress';
 
 const config = { role: 'backend' as const, tier: 'mid' as const, language: 'python' as const };
 const modules = getModules(config);
 const module = modules[0];
-const correct = Object.fromEntries(module.questions.map((q) => [q.id, q.correct]));
+const sessionModule = assessmentModule(module, emptyModule(module));
+const correct = Object.fromEntries(sessionModule.questions.map((q) => [q.id, q.correct]));
 test('scoring requires all answers, rejects invalid choices, and has the exact 75% boundary', () => {
-  assert.equal(scoreQuiz(module, correct), 100);
-  const answers = { ...correct, [module.questions[0].id]: (module.questions[0].correct + 1) % 4 };
-  assert.equal(scoreQuiz(module, answers), 75);
+  assert.equal(scoreQuiz(sessionModule, correct), 100);
+  const answers = {
+    ...correct,
+    ...Object.fromEntries(
+      sessionModule.questions.slice(0, 3).map((q) => [q.id, (q.correct + 1) % 4]),
+    ),
+  };
+  assert.equal(scoreQuiz(sessionModule, answers), 75);
   assert.equal(
-    scoreQuiz(module, {
+    scoreQuiz(sessionModule, {
       ...answers,
-      [module.questions[1].id]: (module.questions[1].correct + 1) % 4,
+      ...Object.fromEntries(
+        sessionModule.questions.slice(3, 6).map((q) => [q.id, (q.correct + 1) % 4]),
+      ),
     }),
     50,
   );
-  assert.throws(() => scoreQuiz(module, {}));
-  assert.throws(() => scoreQuiz(module, { ...correct, [module.questions[0].id]: 7 }));
+  assert.throws(() => scoreQuiz(sessionModule, {}));
+  assert.throws(() => scoreQuiz(sessionModule, { ...correct, [sessionModule.questions[0].id]: 7 }));
 });
 test('completion requires each preparation, objective and self-review condition', () => {
-  const p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
+  let p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
   assert.equal(moduleStatus(module, p).complete, false);
   p.prep = module.steps.map(() => true);
   p.response = 'My concrete answer';
   p.review = module.exercise.criteria.map(() => true);
+  const extra = exerciseList(module)[1];
+  p = updateExercise(module, p, extra.id, {
+    response: 'Second response',
+    review: extra.criteria.map(() => true),
+  });
   assert.equal(moduleStatus(module, p).complete, true);
   p.response = '  ';
   assert.equal(moduleStatus(module, p).complete, false);
 });
 test('stale quiz versions cannot count toward completion', () => {
   const p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
-  assert.equal(moduleStatus({ ...module, version: 2 }, p).quiz, false);
+  assert.equal(moduleStatus({ ...module, version: module.version + 1 }, p).quiz, false);
 });
 test('retakes preserve a best passing attempt beyond the bounded history', () => {
   let p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
-  const wrong = Object.fromEntries(module.questions.map((q) => [q.id, (q.correct + 1) % 4]));
+  const wrong = Object.fromEntries(sessionModule.questions.map((q) => [q.id, (q.correct + 1) % 4]));
   for (let i = 0; i < 25; i++)
     p = recordAttempt(module, p, wrong, `2026-10-26T00:00:${String(i).padStart(2, '0')}Z`);
   assert.equal(p.attempts.length, 20);

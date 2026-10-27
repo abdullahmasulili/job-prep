@@ -4,7 +4,14 @@ import { aiWorkflow } from './ai';
 import { frontendTracks } from './frontend';
 import { backendTracks } from './backend';
 import { fullstackTracks } from './fullstack';
-import { languages, languageQuestion } from './languages';
+import { languages } from './languages';
+import { frontendBank } from './banks/frontend';
+import { backendBank } from './banks/backend';
+import { fullstackBank } from './banks/fullstack';
+import { aptitudeBank, aptitudeExercises } from './banks/aptitude';
+import { interviewBank, interviewExercises } from './banks/interview';
+import { languageBank } from './banks/language';
+import { aiBank, aiExercises } from './banks/ai';
 import {
   sources,
   type ProfileConfig,
@@ -14,7 +21,7 @@ import {
   type Blueprint,
 } from './types';
 export { languages };
-export const REVIEWED_ON = '2026-10-26';
+export const REVIEWED_ON = '2026-10-27';
 export const roles: {
   id: Role;
   label: string;
@@ -73,6 +80,9 @@ export function getModules(config: ProfileConfig): PrepModule[] {
   const track = { frontend: frontendTracks, backend: backendTracks, fullstack: fullstackTracks }[
     config.role
   ][config.tier];
+  const bank = { frontend: frontendBank, backend: backendBank, fullstack: fullstackBank }[
+    config.role
+  ](config.tier);
   const language = languages.find((l) => l.id === config.language)!;
   const technicalSources =
     config.role === 'frontend'
@@ -92,8 +102,9 @@ export function getModules(config: ProfileConfig): PrepModule[] {
     title: 'Role & language fundamentals',
     description: `Build the ${config.tier === 'junior' ? 'foundations' : config.tier === 'mid' ? 'feature-level judgment' : 'system-level judgment'} expected in a ${roles.find((r) => r.id === config.role)!.label.toLowerCase()} role, using ${language.label}.`,
     steps: track.learn,
-    questions: [languageQuestion(config.language, config.tier), ...track.questions.slice(0, 3)],
+    questions: [...languageBank(config.language, config.tier), ...bank.fundamentals],
     exercise,
+    exercises: [{ ...exercise, id: 'original' }, ...bank.fundamentalsExercises],
     sources: technicalSources,
   };
   const practical: Blueprint = {
@@ -101,7 +112,7 @@ export function getModules(config: ProfileConfig): PrepModule[] {
     description:
       'Work through realistic implementation decisions, failure cases, testing, and design tradeoffs.',
     steps: track.build,
-    questions: track.questions.slice(3, 7),
+    questions: bank.practical,
     exercise: {
       title: 'Work through a realistic scenario',
       prompt: `${track.task} Use ${language.label} where implementation details matter. ${config.role === 'fullstack' ? 'Browser-specific code uses JavaScript/TypeScript.' : ''}`,
@@ -114,30 +125,52 @@ export function getModules(config: ProfileConfig): PrepModule[] {
     },
     sources: technicalSources,
   };
+  const aptitudeContent = aptitude(config.tier);
+  const interviewContent = interview(config.role, config.tier);
+  const aiContent = aiWorkflow(config.role, config.tier);
   return [
     {
-      ...aptitude(config.tier),
+      ...aptitudeContent,
+      questions: aptitudeBank(config.tier),
+      exercises: [
+        { ...aptitudeContent.exercise, id: 'original' },
+        ...aptitudeExercises(config.tier),
+      ],
       id: 'aptitude',
       subtitle: 'Think clearly',
       minutes: 25,
-      version: 1,
+      version: 2,
     },
-    { ...fundamentals, id: 'fundamentals', subtitle: 'Know your craft', minutes: 40, version: 1 },
-    { ...practical, id: 'practical', subtitle: 'Put it into practice', minutes: 50, version: 1 },
+    { ...fundamentals, id: 'fundamentals', subtitle: 'Know your craft', minutes: 40, version: 2 },
     {
-      ...interview(config.role, config.tier),
+      ...practical,
+      exercises: [{ ...practical.exercise, id: 'original' }, ...bank.practicalExercises],
+      id: 'practical',
+      subtitle: 'Put it into practice',
+      minutes: 50,
+      version: 2,
+    },
+    {
+      ...interviewContent,
+      questions: interviewBank(config.tier),
+      exercises: [
+        { ...interviewContent.exercise, id: 'original' },
+        ...interviewExercises(config.role, config.tier),
+      ],
       id: 'interview',
       subtitle: 'Tell your story',
       minutes: 30,
-      version: 1,
+      version: 2,
     },
     {
-      ...aiWorkflow(config.role, config.tier),
+      ...aiContent,
+      questions: aiBank,
+      exercises: [{ ...aiContent.exercise, id: 'original' }, ...aiExercises],
       id: 'ai',
       subtitle: 'Optional extension',
       minutes: 30,
       optional: true,
-      version: 1,
+      version: 2,
     },
   ];
 }

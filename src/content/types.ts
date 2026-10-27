@@ -5,6 +5,7 @@ export type ProfileConfig = { role: Role; tier: Tier; language: Language };
 export type Choice = { text: string; explanation: string };
 export type Question = {
   id: string;
+  topic?: string;
   prompt: string;
   code?: string;
   choices: Choice[];
@@ -12,6 +13,13 @@ export type Question = {
 };
 export type Step = { title: string; body: string };
 export type Source = { label: string; url: string };
+export type Exercise = {
+  id: string;
+  title: string;
+  prompt: string;
+  reference: string;
+  criteria: string[];
+};
 export type PrepModule = {
   id: string;
   title: string;
@@ -23,35 +31,18 @@ export type PrepModule = {
   steps: Step[];
   questions: Question[];
   exercise: { title: string; prompt: string; reference: string; criteria: string[] };
+  exercises?: Exercise[];
   sources: Source[];
 };
 export type Blueprint = Omit<PrepModule, 'id' | 'subtitle' | 'minutes' | 'version' | 'optional'>;
+export type Guide = Omit<Blueprint, 'questions'>;
 export type TechnicalTrack = {
   learn: Step[];
   build: Step[];
   task: string;
   reference: string;
-  questions: Question[];
 };
 
-type Answer = [text: string, explanation: string];
-export function q(
-  id: string,
-  prompt: string,
-  answer: Answer,
-  others: [Answer, Answer, Answer],
-  code?: string,
-): Question {
-  const offset = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 4;
-  const choices = [answer, ...others].map(([text, explanation]) => ({ text, explanation }));
-  return {
-    id,
-    prompt,
-    code,
-    choices: [...choices.slice(offset), ...choices.slice(0, offset)],
-    correct: (4 - offset) % 4,
-  };
-}
 export const sources = {
   mdn: { label: 'MDN curriculum', url: 'https://developer.mozilla.org/en-US/curriculum/' },
   sfia: {

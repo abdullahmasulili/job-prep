@@ -7,6 +7,8 @@ import {
   Checkbox,
   TextField,
 } from '@mui/material';
+import { useState } from 'react';
+import { exerciseList, exerciseProgress, updateExercise, moduleStatus } from '@/lib/progress';
 import type { PrepModule } from '@/content/types';
 import type { ModuleProgress } from '@/lib/progress';
 import { useProgress } from './progress-provider';
@@ -22,20 +24,42 @@ export function Exercise({
   active: boolean;
 }) {
   const { changeModule, locked, saving, issue } = useProgress();
+  const exercises = exerciseList(module);
+  const [selectedId, setSelectedId] = useState(exercises[0].id);
+  const exercise = exercises.find((e) => e.id === selectedId) ?? exercises[0];
+  const draft = exerciseProgress(module, progress, exercise.id);
+  const status = moduleStatus(module, progress);
   const reviewed =
-    progress.response.trim().length > 0 &&
-    module.exercise.criteria.every((_, i) => progress.review[i]);
+    draft.response.trim().length > 0 && exercise.criteria.every((_, i) => draft.review[i]);
   return (
     <div className="practice-body">
-      <h2>{module.exercise.title}</h2>
-      <p className="exercise-prompt">{module.exercise.prompt}</p>
+      <label htmlFor="exercise-picker">Choose an exercise</label>
+      <select
+        id="exercise-picker"
+        value={exercise.id}
+        onChange={(e) => setSelectedId(e.target.value)}
+        className="exercise-picker"
+      >
+        {exercises.map((e) => (
+          <option key={e.id} value={e.id}>
+            {e.title}
+          </option>
+        ))}
+      </select>
+      <p className="small muted">
+        {status.reviewedExercises} of {exercises.length} exercises reviewed. Complete any{' '}
+        {status.requiredExercises} to finish this module. Each draft saves separately.
+      </p>
+      <h2>{exercise.title}</h2>
+      <p className="exercise-prompt">{exercise.prompt}</p>
       {active && (
         <TextField
+          key={exercise.id}
           id="exercise-response"
           label="Your response"
           multiline
           minRows={9}
-          value={progress.response}
+          value={draft.response}
           disabled={locked}
           placeholder="Work through the problem in your own words. Include your reasoning, tradeoffs, and how you would verify the result."
           slotProps={{
@@ -47,7 +71,9 @@ export function Exercise({
           }}
           onChange={(e) => {
             const value = e.target.value;
-            changeModule(module, (p) => ({ ...p, response: value }));
+            changeModule(module, (p) =>
+              updateExercise(module, p, exercise.id, { response: value, review: [] }),
+            );
           }}
         />
       )}
@@ -59,7 +85,7 @@ export function Exercise({
               ? 'Saving in this browser…'
               : 'Saved in this browser'}
         </span>
-        <span>{progress.response.length.toLocaleString()} / 30,000</span>
+        <span>{draft.response.length.toLocaleString()} / 30,000</span>
       </div>
       <Accordion className="reference-answer" disableGutters>
         <AccordionSummary
@@ -70,25 +96,28 @@ export function Exercise({
           Compare with a reference approach
         </AccordionSummary>
         <AccordionDetails id="reference-content">
-          <p>{module.exercise.reference}</p>
+          <p>{exercise.reference}</p>
         </AccordionDetails>
       </Accordion>
       <fieldset className="self-review" disabled={locked}>
         <legend>Review your own work</legend>
         <p>This is self-assessment. Your response is not automatically graded or executed.</p>
-        {module.exercise.criteria.map((criterion, index) => (
+        {exercise.criteria.map((criterion, index) => (
           <label key={criterion} className="review-check">
             <Checkbox
               disabled={locked}
-              checked={progress.review[index] ?? false}
+              checked={draft.review[index] ?? false}
               onChange={(e) => {
                 const checked = e.target.checked;
-                changeModule(module, (p) => ({
-                  ...p,
-                  review: module.exercise.criteria.map((_, i) =>
-                    i === index ? checked : !!p.review[i],
-                  ),
-                }));
+                changeModule(module, (p) => {
+                  const current = exerciseProgress(module, p, exercise.id);
+                  return updateExercise(module, p, exercise.id, {
+                    ...current,
+                    review: exercise.criteria.map((_, i) =>
+                      i === index ? checked : !!current.review[i],
+                    ),
+                  });
+                });
               }}
             />
             <span>{criterion}</span>
