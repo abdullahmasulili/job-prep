@@ -120,7 +120,9 @@ export function recordAttempt(
   const score = scoreQuiz(selected, answers);
   const canonical = Object.fromEntries(session.questionIds.map((id) => [id, answers[id]]));
   const attempt: Attempt = {
-    id: crypto.randomUUID(),
+    id:
+      globalThis.crypto?.randomUUID?.() ??
+      `attempt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
     version: module.version,
     questionIds: session.questionIds,
     answers: canonical,

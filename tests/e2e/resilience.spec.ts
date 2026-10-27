@@ -56,6 +56,106 @@ test('a second tab causes a conflict and stale state cannot overwrite newer prog
   await expect(page.getByText('Another tab has newer progress', { exact: true })).not.toBeVisible();
 });
 
+test('opening the current practice module in another tab keeps the first tab editable', async ({
+  page,
+  context,
+}) => {
+  await enrollPath(page);
+  await page.getByRole('link', { name: 'My path', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Required modules' })
+    .getByRole('link', { name: /Aptitude & problem solving/ })
+    .click();
+  await page.getByRole('tab', { name: 'Exercise', exact: true }).click();
+  await page.getByLabel('Your response').fill('Keep this draft while reading in another tab.');
+  await expect(page.getByText('Saved on this device', { exact: true })).toBeVisible();
+  const before = await page.evaluate((k) => localStorage.getItem(k), key);
+
+  const second = await context.newPage();
+  await second.goto('/path');
+  await second
+    .getByRole('region', { name: 'Required modules' })
+    .getByRole('link', { name: /Aptitude & problem solving/ })
+    .click();
+  await expect(second.getByRole('tab', { name: 'Preparation', exact: true })).toBeVisible();
+  await second.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  await expect(second.getByText('Saved on this device', { exact: true })).toBeVisible();
+  expect(await second.evaluate((k) => localStorage.getItem(k), key)).toBe(before);
+  await second.reload();
+  await expect(second.getByRole('tab', { name: 'Preparation', exact: true })).toBeVisible();
+  await second.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  await expect(second.getByText('Saved on this device', { exact: true })).toBeVisible();
+  expect(await second.evaluate((k) => localStorage.getItem(k), key)).toBe(before);
+  await expect(page.getByText('Another tab has newer progress', { exact: true })).not.toBeVisible();
+  await expect(page.getByLabel('Your response')).toBeEnabled();
+  await page.getByLabel('Your response').fill('The original tab can keep working.');
+  await expect(page.getByText('Saved on this device', { exact: true })).toBeVisible();
+});
+
+test('quizzes can be submitted and retaken without secure-context APIs', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, 'randomUUID', { value: undefined });
+    Object.defineProperty(navigator, 'locks', { value: undefined });
+  });
+  await enrollPath(page);
+  await page.getByRole('link', { name: 'My path', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Required modules' })
+    .getByRole('link', { name: /Aptitude & problem solving/ })
+    .click();
+  await page.getByRole('tab', { name: 'Assessment', exact: true }).click();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    for (const question of await page.locator('[data-question-id]').all())
+      await question.getByRole('radio').first().check();
+    await page.getByRole('button', { name: 'Check answers', exact: true }).click();
+    await expect(page.getByRole('region', { name: 'Assessment result' })).toBeVisible();
+    await expect(page.getByText('Correct answer', { exact: true })).toHaveCount(12);
+    if (attempt === 0) await page.getByRole('button', { name: 'Try again' }).click();
+  }
+  await expect(page.getByText('Progress is not saved', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'My progress', exact: true }).click();
+  await expect(page.locator('.attempt-list > li')).toHaveCount(2);
+});
+
+test('unexpected submission errors retain answers and allow retry', async ({ page }) => {
+  await enrollPath(page);
+  await page.getByRole('link', { name: 'My path', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Required modules' })
+    .getByRole('link', { name: /Aptitude & problem solving/ })
+    .click();
+  await page.getByRole('tab', { name: 'Assessment', exact: true }).click();
+  for (const question of await page.locator('[data-question-id]').all())
+    await question.getByRole('radio').first().check();
+  await page.evaluate(() => {
+    Object.defineProperty(crypto, 'randomUUID', {
+      configurable: true,
+      value: () => {
+        throw new Error('Attempt creation failed');
+      },
+    });
+  });
+  await page.getByRole('button', { name: 'Check answers', exact: true }).click();
+  await expect(page.locator('#quiz-error')).toContainText('could not be submitted');
+  await expect(page.locator('[data-question-id] input:checked')).toHaveCount(12);
+  await expect(page.getByRole('region', { name: 'Assessment result' })).not.toBeVisible();
+  await page.evaluate(() => Reflect.deleteProperty(crypto, 'randomUUID'));
+  await page.getByRole('button', { name: 'Check answers', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Assessment result' })).toBeVisible();
+  await page.getByRole('link', { name: 'My progress', exact: true }).click();
+  await expect(page.locator('.attempt-list > li')).toHaveCount(1);
+});
+
 test('overlapping tab edits cannot both commit the same base revision', async ({
   page,
   context,

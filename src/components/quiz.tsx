@@ -24,6 +24,13 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
     event.preventDefault();
     try {
       scoreQuiz(assessment, progress.answers);
+    } catch {
+      setError('Answer every question before checking your answers.');
+      const index = assessment.questions.findIndex((q) => progress.answers[q.id] === undefined);
+      questionRefs.current[index]?.querySelector('input')?.focus();
+      return;
+    }
+    try {
       changeModule(module, (p) => recordAttempt(module, p, p.answers));
       setError('');
       requestAnimationFrame(() => {
@@ -31,9 +38,7 @@ export function Quiz({ module, progress }: { module: PrepModule; progress: Modul
         resultHeading.current?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
       });
     } catch {
-      setError('Answer every question before checking your answers.');
-      const index = assessment.questions.findIndex((q) => progress.answers[q.id] === undefined);
-      questionRefs.current[index]?.querySelector('input')?.focus();
+      setError('Your assessment could not be submitted. Your answers are still here. Try again.');
     }
   }
   return (

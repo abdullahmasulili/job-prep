@@ -62,6 +62,18 @@ test('stale quiz versions cannot count toward completion', () => {
   const p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
   assert.equal(moduleStatus({ ...module, version: module.version + 1 }, p).quiz, false);
 });
+test('attempts have distinct IDs and retain results when crypto is unavailable', (t) => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto')!;
+  Object.defineProperty(globalThis, 'crypto', { configurable: true, value: undefined });
+  t.after(() => Object.defineProperty(globalThis, 'crypto', descriptor));
+  const first = recordAttempt(module, emptyModule(module), correct, '2026-10-27T00:00:00Z');
+  const second = recordAttempt(module, first, correct, '2026-10-27T00:00:00Z');
+  assert.equal(second.attempts.length, 2);
+  assert.ok(first.attempts[0].id.length > 0);
+  assert.notEqual(second.attempts[0].id, second.attempts[1].id);
+  assert.equal(second.best?.score, 100);
+  assert.equal(moduleStatus(module, second).quiz, true);
+});
 test('retakes preserve a best passing attempt beyond the bounded history', () => {
   let p = recordAttempt(module, emptyModule(module), correct, '2026-10-26T00:00:00Z');
   const wrong = Object.fromEntries(sessionModule.questions.map((q) => [q.id, (q.correct + 1) % 4]));
