@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --import tsx --test tests/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
