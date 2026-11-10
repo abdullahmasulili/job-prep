@@ -40,7 +40,7 @@ export function ModuleRow({
             <Icon name="clock" size={14} />
             {module.minutes} min estimate
           </span>
-          <span>4 questions</span>
+          <span>{module.questions.length} questions in bank</span>
           {!compact && <span>{status.requirements} of 3 requirements</span>}
         </div>
       </div>
@@ -102,8 +102,8 @@ export function PathView() {
         </Paper>
       )}
       <p className="field-note">
-        Each module combines a preparation checklist, a multiple-choice assessment, and a
-        self-reviewed exercise. All modules are available at any time.
+        Each module combines a preparation checklist, a multiple-choice assessment, and two
+        self-reviewed exercises. All modules are available at any time.
       </p>
     </>
   );

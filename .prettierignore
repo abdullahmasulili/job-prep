@@ -1,6 +1,8 @@
 node_modules
 .next
-package-lock.json
+.wrangler
+out
+pnpm-lock.yaml
 artifacts
 .playwright-mcp
 .impeccable

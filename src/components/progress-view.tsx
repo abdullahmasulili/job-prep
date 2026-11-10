@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { getModules, profileLabel } from '@/content/catalog';
-import { moduleStatus, pathStats } from '@/lib/progress';
+import { moduleStatus, pathStats, attemptScore } from '@/lib/progress';
 import { useProgress } from './progress-provider';
 import { Action, EmptyPath, PageHeader, ProgressBar, StatusTag } from './ui';
 import { Paper } from '@mui/material';
@@ -13,7 +13,13 @@ export function ProgressView() {
   const modules = getModules(profile);
   const stats = pathStats(modules, profile);
   const history = modules
-    .flatMap((m) => (profile.modules[m.id]?.attempts ?? []).map((a) => ({ ...a, module: m })))
+    .flatMap((m) =>
+      (profile.modules[m.id]?.attempts ?? []).map((a) => ({
+        ...a,
+        score: a.version === m.version ? attemptScore(m, a) : a.score,
+        module: m,
+      })),
+    )
     .sort((a, b) => b.at.localeCompare(a.at));
   return (
     <>
@@ -56,7 +62,7 @@ export function ProgressView() {
           .map((m) => {
             const p = profile.modules[m.id];
             const s = moduleStatus(m, p);
-            const best = p?.best?.version === m.version ? p.best.score : null;
+            const best = attemptScore(m, p?.best);
             return (
               <div className="breakdown-row" key={m.id}>
                 <div>
@@ -102,7 +108,11 @@ export function ProgressView() {
           <ol className="attempt-list">
             {history.map((a) => (
               <li key={a.id}>
-                <span className={`attempt-score ${a.score >= 75 ? 'passed' : ''}`}>{a.score}%</span>
+                <span
+                  className={`attempt-score ${a.score !== null && a.score >= 75 ? 'passed' : ''}`}
+                >
+                  {a.score === null ? '—' : `${a.score}%`}
+                </span>
                 <div>
                   <strong>{a.module.title}</strong>
                   <span>
@@ -112,9 +122,11 @@ export function ProgressView() {
                     })}{' '}
                     ·{' '}
                     {a.version === a.module.version
-                      ? a.score >= 75
-                        ? 'Passed'
-                        : 'Keep practicing'
+                      ? a.score === null
+                        ? 'Incompatible attempt'
+                        : a.score >= 75
+                          ? 'Passed'
+                          : 'Keep practicing'
                       : 'Earlier content version'}
                   </span>
                 </div>

@@ -2,10 +2,11 @@
   "name": "jobprep",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
-    "start": "next start --hostname 0.0.0.0",
+    "start": "wrangler pages dev out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
@@ -37,6 +38,7 @@
     "eslint-config-next": "^16.4.3",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "4.158.0"
   }
 }
