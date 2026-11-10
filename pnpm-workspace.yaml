@@ -2,6 +2,7 @@ allowBuilds:
   esbuild: true
   fsevents: true
   unrs-resolver: true
+  workerd: true
 
 # Preserve the version already recorded in the npm lockfile during migration.
 minimumReleaseAgeExclude:

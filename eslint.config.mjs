@@ -5,5 +5,5 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   { files: ['tests/**/*.ts'], rules: { '@next/next/no-assign-module-variable': 'off' } },
-  globalIgnores(['.next/**', 'playwright-report/**', 'test-results/**']),
+  globalIgnores(['.next/**', '.wrangler/**', 'out/**', 'playwright-report/**', 'test-results/**']),
 ]);

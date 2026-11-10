@@ -37,12 +37,31 @@ Open [localhost:3000](http://localhost:3000) and choose a role, experience level
 and language to create your first path. You can enable the optional AI extension
 during onboarding or later in Settings.
 
-For a production build:
+To build and preview the Cloudflare Pages export locally, use the project's Wrangler CLI.
 
 ```sh
 pnpm build
 pnpm start
 ```
+
+Open [localhost:8788](http://localhost:8788). Rebuild after changing the app to refresh `out/`.
+
+## Deploy to Cloudflare Pages
+
+For a Git-connected Pages project, use `pnpm build` as the build command and `out` as the output
+directory. Set `NODE_VERSION=24.10.0` and `PNPM_VERSION=12.3.4` in the Pages build environment.
+The app is a static export, with every practice module generated at build time.
+
+To upload a local build to an existing Pages project, replace `YOUR_PAGES_PROJECT` with its name.
+
+```sh
+pnpm build
+pnpm exec wrangler login
+pnpm exec wrangler pages deploy out --project-name YOUR_PAGES_PROJECT
+```
+
+Progress and drafts are saved per origin. The local preview, the `pages.dev` URL, and any custom
+domain each have separate browser storage.
 
 ## App navigation
 
@@ -135,6 +154,8 @@ pnpm test:e2e
 
 Browser tests use Playwright with an installed Google Chrome (`channel: 'chrome'`)
 and start a local Next.js server on port 3100 if one is not already running.
+To test the production export, run `pnpm build` and then `pnpm start --port 3100` before
+`pnpm test:e2e`.
 To use bundled Chromium instead, remove the channel setting in
 `playwright.config.ts` and install it with `pnpm exec playwright install chromium`.
 The suite covers onboarding, assessment feedback, completion, drafts, retakes,
