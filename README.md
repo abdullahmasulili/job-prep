@@ -141,6 +141,8 @@ choices are curated ecosystem options, not a geographic hiring-demand ranking.
 
 ## Verify
 
+See [Verification by change](docs/verification.md) for targeted checks and browser coverage.
+
 Run these checks after installing dependencies:
 
 ```sh
@@ -169,21 +171,9 @@ checks it without modifying files.
 
 ## Project structure
 
-- `src/content/catalog.ts`: supported profiles, module assembly, versions, and reference review date.
-- `src/content/banks/`: question banks and additional exercises by role, language, and shared topic.
-- `src/content/`: preparation guides, language metadata, shared types, sources, and bank helpers.
-- `src/lib/progress.ts`: scoring, completion, independent exercise drafts and enrollment transitions.
-- `src/lib/sessions.ts`: stable assessment sessions, question coverage and retake selection.
-- `src/lib/storage.ts`: schema validation and revision-aware local persistence.
-- `src/lib/workspace-store.ts`: per-provider Redux Toolkit store for progress and save status.
-- `src/components/progress-provider.tsx`: Redux-backed commands, hydration and coordinated browser persistence.
-- `src/theme/theme.ts`: Material UI palette, typography and shared component styles.
-- `src/components/app-theme.tsx`: Material theme and semantic CSS-variable adapter.
-- `src/components/`: focused screens and shared interaction primitives.
-- `src/app/`: thin App Router routes, root provider composition, font imports, and responsive layout CSS.
-- `tests/`: domain/content/storage checks and Playwright workflows.
-- `docs/superpowers/`: design specifications and implementation plans.
-- `artifacts/`: saved UI screenshots and verification reports from earlier work.
+- [Architecture](docs/architecture.md) maps source ownership, runtime data flow, and persistence boundaries.
+- [Agent guide](AGENTS.md) covers repository guardrails and where to start before editing.
+- [Project history](docs/superpowers/) contains dated design specs and implementation plans. [Artifacts](artifacts/) contains earlier UI screenshots and verification reports.
 
 ## Maintain the curriculum
 
