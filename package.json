@@ -13,7 +13,7 @@
     "format:check": "prettier --check .",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy --env production"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
