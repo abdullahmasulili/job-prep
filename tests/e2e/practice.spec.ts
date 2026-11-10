@@ -96,10 +96,11 @@ test('assessment validation, feedback, drafts and completion survive reload and 
   await expect(page.getByText('1 of 4 required modules complete')).toBeVisible();
 });
 
-test('unknown modules and disabled AI links have a recovery route', async ({ page }) => {
+test('unknown modules return 404 and both error states offer a way forward', async ({ page }) => {
   await enrollPath(page);
-  await page.goto('/practice/missing');
-  await expect(page.getByRole('heading', { name: 'Module not found' })).toBeVisible();
+  const missing = await page.goto('/practice/missing');
+  expect(missing?.status()).toBe(404);
+  await expect(page.getByRole('link', { name: 'My path', exact: true })).toBeVisible();
   await page.goto('/practice/ai');
   await expect(page.getByRole('heading', { name: 'Add AI workflow preparation' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Enable in Settings' })).toBeVisible();

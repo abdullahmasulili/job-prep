@@ -1,5 +1,7 @@
 node_modules
 .next
+.wrangler
+out
 pnpm-lock.yaml
 artifacts
 .playwright-mcp

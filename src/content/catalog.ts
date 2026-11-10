@@ -22,6 +22,7 @@ import {
 } from './types';
 export { languages };
 export const REVIEWED_ON = '2026-10-27';
+export const moduleIds = ['aptitude', 'fundamentals', 'practical', 'interview', 'ai'];
 export const roles: {
   id: Role;
   label: string;

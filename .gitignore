@@ -4,6 +4,7 @@ out/
 build/
 coverage/
 .vercel/
+.wrangler/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

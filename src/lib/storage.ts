@@ -1,5 +1,5 @@
 import { emptyStore, profileId, type Store } from './progress';
-import { languagesFor, roles, tiers } from '../content/catalog';
+import { languagesFor, moduleIds, roles, tiers } from '../content/catalog';
 import type { ProfileConfig } from '../content/types';
 
 export const STORAGE_KEY = 'jobprep.progress.v1';
@@ -61,7 +61,6 @@ const attempt = (v: unknown) =>
   integer(v.score, 0, 100) &&
   typeof v.at === 'string' &&
   !Number.isNaN(Date.parse(v.at));
-const moduleIds = ['aptitude', 'fundamentals', 'practical', 'interview', 'ai'];
 function validStore(v: unknown): v is Store {
   if (
     !record(v) ||

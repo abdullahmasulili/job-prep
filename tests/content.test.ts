@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getModules, roles, tiers, languagesFor } from '../src/content/catalog';
+import { getModules, roles, tiers, languagesFor, moduleIds } from '../src/content/catalog';
 
 test('all nine tracks and supported languages have complete, referenced assessments', () => {
   assert.equal(roles.length * tiers.length, 9);
@@ -17,7 +17,10 @@ test('all nine tracks and supported languages have complete, referenced assessme
         const questions = modules.flatMap((module) => module.questions);
         assert.equal(new Set(questions.map((q) => q.id)).size, questions.length);
         assert.equal(new Set(questions.map((q) => q.prompt)).size, questions.length);
-        assert.equal(new Set(modules.map((m) => m.id)).size, 5);
+        assert.deepEqual(
+          modules.map((module) => module.id),
+          moduleIds,
+        );
         for (const module of modules) {
           assert.ok(
             module.questions.length >= (module.optional ? 12 : 24),
