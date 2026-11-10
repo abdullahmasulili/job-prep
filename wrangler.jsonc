@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "job-prep",
+  "compatibility_date": "2026-11-04",
+  "previews": {},
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}
